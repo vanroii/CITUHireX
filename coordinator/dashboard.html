@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <h1>Coordinator Overview</h1>
+          <p class="subtitle" id="subtitle">Loading…</p>
+        </div>
+      </div>
+
+      <div class="stat-row" id="stat-row"></div>
+
+      <h2 class="section-title">Job postings awaiting approval</h2>
+      <div class="list-col" id="pending-jobs" style="margin-bottom:40px;">
+        <p class="loading-text">Loading…</p>
+      </div>
+
+      <h2 class="section-title">Applications awaiting endorsement</h2>
+      <div class="list-col" id="pending-apps">
+        <p class="loading-text">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/coordinator-dashboard.js"></script>
+</body>
+</html>

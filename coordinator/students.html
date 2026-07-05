@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Students — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <h1>Students</h1>
+          <p class="subtitle">All students registered on CITUHireX</p>
+        </div>
+      </div>
+
+      <div class="field" style="max-width:320px;">
+        <input type="text" id="search-input" placeholder="Search by name or student number…" />
+      </div>
+
+      <div class="data-table" id="students-table">
+        <p class="empty">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/coordinator-students.js"></script>
+</body>
+</html>

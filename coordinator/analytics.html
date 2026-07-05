@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <h1>Analytics</h1>
+          <p class="subtitle">Program-wide OJT placement activity</p>
+        </div>
+      </div>
+
+      <div class="stat-row" id="stat-row"></div>
+
+      <div style="display:flex; gap:24px; flex-wrap:wrap;">
+        <div class="card" style="flex:1; min-width:340px;">
+          <h2 class="section-title">Applications by status</h2>
+          <canvas id="status-chart" height="220"></canvas>
+        </div>
+        <div class="card" style="flex:1; min-width:340px;">
+          <h2 class="section-title">Students by program</h2>
+          <canvas id="program-chart" height="220"></canvas>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/coordinator-analytics.js"></script>
+</body>
+</html>

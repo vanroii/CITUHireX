@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Company Profile — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content" style="max-width: 640px;">
+      <div class="topbar">
+        <div>
+          <h1>Company Profile</h1>
+          <p class="subtitle">Visible to students once you're verified</p>
+        </div>
+      </div>
+
+      <div id="verify-badge"></div>
+
+      <form id="profile-form" class="card">
+        <div class="field">
+          <label>Company Name</label>
+          <input type="text" id="company-name" required />
+        </div>
+        <div class="field">
+          <label>Industry</label>
+          <input type="text" id="industry" />
+        </div>
+        <div class="field">
+          <label>Address</label>
+          <input type="text" id="address" />
+        </div>
+        <div class="field">
+          <label>Website</label>
+          <input type="text" id="website" placeholder="https://" />
+        </div>
+        <div class="field">
+          <label>Contact Person</label>
+          <input type="text" id="contact-person" />
+        </div>
+
+        <p class="form-error" id="error-msg" style="display:none;"></p>
+        <p style="color:var(--success); font-size:14px; font-weight:600; display:none;" id="success-msg">Saved.</p>
+
+        <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
+      </form>
+    </main>
+  </div>
+
+  <script type="module" src="../js/company-profile.js"></script>
+</body>
+</html>

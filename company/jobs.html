@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Job Postings — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <h1>My Job Postings</h1>
+          <p class="subtitle">Manage your OJT openings</p>
+        </div>
+        <button class="btn btn-primary" id="toggle-form-btn">+ Post New Job</button>
+      </div>
+
+      <form id="new-job-form" class="card" style="display:none; margin-bottom:32px;">
+        <h2 class="section-title">New Job Posting</h2>
+        <div class="field">
+          <label>Title</label>
+          <input type="text" id="title" required placeholder="Software Engineering Intern" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="description" rows="4" required placeholder="What will the intern work on?"></textarea>
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input type="text" id="location" required placeholder="Cebu IT Park" />
+        </div>
+        <div class="field">
+          <label><input type="checkbox" id="is-remote" style="width:auto; margin-right:8px;" />Remote / Hybrid</label>
+        </div>
+        <div class="field">
+          <label>Required OJT Hours</label>
+          <input type="number" id="required-hours" required value="600" min="1" />
+        </div>
+        <div class="field">
+          <label>Slots Available</label>
+          <input type="number" id="slots" required value="1" min="1" />
+        </div>
+        <div class="field">
+          <label>Eligible Programs (leave unselected for "open to all CEA")</label>
+          <select id="eligible-programs" multiple size="6"></select>
+        </div>
+        <div class="field">
+          <label>Required Skills (comma-separated)</label>
+          <input type="text" id="required-skills" placeholder="JavaScript, React, SQL" />
+        </div>
+
+        <p class="form-error" id="form-error" style="display:none;"></p>
+
+        <div style="display:flex; gap:12px;">
+          <button type="submit" class="btn btn-primary" id="submit-job-btn">Submit for Approval</button>
+          <button type="button" class="btn btn-ghost" id="cancel-form-btn">Cancel</button>
+        </div>
+      </form>
+
+      <div class="list-col" id="jobs-list">
+        <p class="loading-text">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/company-jobs.js"></script>
+</body>
+</html>

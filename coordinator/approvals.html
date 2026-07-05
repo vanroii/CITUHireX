@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Approval Queue — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <h1>Approval Queue</h1>
+          <p class="subtitle">Job postings and applications waiting on your review</p>
+        </div>
+      </div>
+
+      <h2 class="section-title">Job postings</h2>
+      <div class="list-col" id="pending-jobs" style="margin-bottom:40px;">
+        <p class="loading-text">Loading…</p>
+      </div>
+
+      <h2 class="section-title">Applications</h2>
+      <div class="list-col" id="pending-apps">
+        <p class="loading-text">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/coordinator-approvals.js"></script>
+</body>
+</html>
