@@ -14,6 +14,5 @@ where code = 'BSME';
 
 insert into programs (code, name, college, required_ojt_hours) values
   ('BSME-MT', 'BS Mechanical Engineering with Mechatronics', 'CEA', 600),
-  ('BSMinE', 'BS Mining Engineering', 'CEA', 600),
-  ('DMST', 'Diploma in Manufacturing and Semiconductor Technology', 'CEA', 600)
+  ('BSMinE', 'BS Mining Engineering', 'CEA', 600)
 on conflict (code) do nothing;
