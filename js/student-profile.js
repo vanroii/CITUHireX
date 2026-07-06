@@ -1,6 +1,7 @@
 import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
+import { uploadDocument, getSignedUrl } from '../js/storage.js'
 
 const auth = await requireRole('student')
 if (auth) {
@@ -21,6 +22,14 @@ if (auth) {
   document.getElementById('preferred-location').value = student?.preferred_location || ''
   document.getElementById('skills').value = (student?.skills || []).join(', ')
 
+  const currentResumeEl = document.getElementById('current-resume')
+  if (student?.resume_url) {
+    const url = await getSignedUrl(student.resume_url)
+    currentResumeEl.innerHTML = url
+      ? `Current: <a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-weight:600;">View uploaded resume</a> (link expires in 5 min)`
+      : 'A resume is on file, but the link could not be generated.'
+  }
+
   document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault()
     const saveBtn = document.getElementById('save-btn')
@@ -37,6 +46,20 @@ if (auth) {
       .map((s) => s.trim())
       .filter(Boolean)
 
+    let resumePath = student?.resume_url || null
+    const resumeFile = document.getElementById('resume-file').files[0]
+    if (resumeFile) {
+      try {
+        resumePath = await uploadDocument(profile.id, resumeFile, 'resume')
+      } catch (uploadErr) {
+        saveBtn.disabled = false
+        saveBtn.textContent = 'Save Changes'
+        errorMsg.textContent = `Resume upload failed: ${uploadErr.message}`
+        errorMsg.style.display = 'block'
+        return
+      }
+    }
+
     const [{ error: profileErr }, { error: studentErr }] = await Promise.all([
       supabase
         .from('profiles')
@@ -48,6 +71,7 @@ if (auth) {
           year_level: Number(document.getElementById('year-level').value),
           preferred_location: document.getElementById('preferred-location').value,
           skills,
+          resume_url: resumePath,
         })
         .eq('profile_id', profile.id),
     ])

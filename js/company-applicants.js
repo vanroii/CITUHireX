@@ -1,6 +1,7 @@
 import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
+import { getSignedUrl } from '../js/storage.js'
 
 // Companies can only move an application through their part of the workflow.
 // Coordinator-only outcomes (endorsed/rejected) happen on the Coordinator side.
@@ -13,6 +14,8 @@ const STATUS_LABEL = {
   submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Sent to Coordinator',
   endorsed: 'Endorsed', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
+
+const GRID = '1.6fr 1.5fr 1.1fr 0.9fr 1.1fr 1fr'
 
 const auth = await requireRole('company')
 if (auth) {
@@ -31,19 +34,24 @@ if (auth) {
     const list = applicants || []
 
     table.innerHTML = `
-      <div class="thead-row" style="grid-template-columns: 1.8fr 1.8fr 1.4fr 1fr 1.4fr;">
-        <span>Applicant</span><span>Job Posting</span><span>Program</span><span>Applied</span><span>Status</span>
+      <div class="thead-row" style="grid-template-columns: ${GRID};">
+        <span>Applicant</span><span>Job Posting</span><span>Program</span><span>Applied</span><span>Documents</span><span>Status</span>
       </div>
       ${
         list.length
           ? list
               .map(
                 (a) => `
-        <div class="trow" style="grid-template-columns: 1.8fr 1.8fr 1.4fr 1fr 1.4fr;">
+        <div class="trow" style="grid-template-columns: ${GRID};">
           <span style="font-weight:600;">${a.students?.profiles?.full_name || 'Applicant'}</span>
           <span>${a.job_postings?.title || ''}</span>
           <span>${a.students?.programs?.name || ''}</span>
           <span>${new Date(a.applied_at).toLocaleDateString()}</span>
+          <span style="display:flex; gap:8px; flex-wrap:wrap;">
+            ${a.resume_url ? `<button class="btn btn-ghost btn-sm doc-btn" data-path="${a.resume_url}">Resume</button>` : ''}
+            ${a.referral_letter_url ? `<button class="btn btn-ghost btn-sm doc-btn" data-path="${a.referral_letter_url}">Referral</button>` : ''}
+            ${!a.resume_url && !a.referral_letter_url ? '<span class="sub-meta">None</span>' : ''}
+          </span>
           <span>
             ${
               COMPANY_STATUSES.includes(a.status)
@@ -64,6 +72,19 @@ if (auth) {
       sel.addEventListener('change', async () => {
         await supabase.from('applications').update({ status: sel.value }).eq('id', sel.dataset.appId)
         load()
+      })
+    })
+
+    table.querySelectorAll('.doc-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const original = btn.textContent
+        btn.disabled = true
+        btn.textContent = 'Opening…'
+        const url = await getSignedUrl(btn.dataset.path)
+        btn.disabled = false
+        btn.textContent = original
+        if (url) window.open(url, '_blank', 'noopener')
+        else alert("Couldn't generate a link for this document.")
       })
     })
   }

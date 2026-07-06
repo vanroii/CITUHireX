@@ -1,6 +1,7 @@
 import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
+import { getSignedUrl } from '../js/storage.js'
 
 const auth = await requireRole('coordinator')
 if (auth) {
@@ -67,6 +68,11 @@ if (auth) {
           </div>
         </div>
         <div style="width:100%; margin-top:12px;">
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            ${app.resume_url ? `<button class="btn btn-ghost btn-sm doc-btn" data-path="${app.resume_url}">View Resume</button>` : ''}
+            ${app.referral_letter_url ? `<button class="btn btn-ghost btn-sm doc-btn" data-path="${app.referral_letter_url}">View Referral Letter</button>` : ''}
+            ${!app.resume_url && !app.referral_letter_url ? '<span class="sub-meta">No documents attached</span>' : ''}
+          </div>
           <input type="text" class="remarks-input" data-app-id="${app.id}" placeholder="Remarks (optional)"
             style="width:100%; border:1px solid var(--gray-300); border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:12px;" />
           <div class="row-actions">
@@ -78,6 +84,19 @@ if (auth) {
           )
           .join('')
       : '<p class="empty-text">No applications waiting on endorsement.</p>'
+
+    el.querySelectorAll('.doc-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const original = btn.textContent
+        btn.disabled = true
+        btn.textContent = 'Opening…'
+        const url = await getSignedUrl(btn.dataset.path)
+        btn.disabled = false
+        btn.textContent = original
+        if (url) window.open(url, '_blank', 'noopener')
+        else alert("Couldn't generate a link for this document.")
+      })
+    })
 
     el.querySelectorAll('.endorse-btn, .decline-btn').forEach((btn) => {
       btn.addEventListener('click', async () => {
