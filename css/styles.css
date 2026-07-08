@@ -345,7 +345,7 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
 .navbar .nav-links a { color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500; }
 .navbar .nav-cta { display: flex; align-items: center; gap: 16px; }
 
-.hero-section { border-radius: 24px; margin: 0 32px; padding: 96px 64px; }
+.hero-section { border-radius: 24px; margin: 32px 32px; padding: 96px 64px; }
 .hero-section .eyebrow { margin-bottom: 24px; }
 .hero-section h1 { font-size: 52px; font-weight: 800; color: #fff; line-height: 1.15; max-width: 760px; margin: 0 0 24px; }
 .hero-section p { color: rgba(255,255,255,0.78); font-size: 18px; max-width: 620px; line-height: 1.6; margin: 0 0 32px; }
