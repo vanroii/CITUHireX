@@ -130,10 +130,31 @@ form.addEventListener('submit', async (e) => {
     return
   }
 
+  // Email confirmation required: hand the role + email + password to the
+  // login page so the person only has to click "Log In" once they've
+  // confirmed their address. Password only ever goes in sessionStorage
+  // (cleared the moment login.js reads it), never in the URL — if the
+  // confirmation link happens to open in a different tab, sessionStorage
+  // won't carry over and the password field just comes up empty, which is
+  // a safe, graceful fallback rather than a broken page.
+  try {
+    sessionStorage.setItem('citu_prefill_password', password)
+  } catch {
+    // sessionStorage unavailable (private browsing, etc.) — not fatal.
+  }
+
   document.getElementById('sent-email').textContent = email
   form.style.display = 'none'
   loginLinkRow.style.display = 'none'
   successPanel.style.display = 'block'
+
+  const goToLoginBtn = document.getElementById('go-to-login-btn')
+  if (goToLoginBtn) {
+    goToLoginBtn.href = `login.html?role=${encodeURIComponent(role)}&email=${encodeURIComponent(email)}`
+  }
 })
 
-setRole('student')
+// Preselect the role tab from a query param, e.g. signup.html?role=company
+const params = new URLSearchParams(window.location.search)
+const initialRole = params.get('role')
+setRole(['student', 'company', 'coordinator'].includes(initialRole) ? initialRole : 'student')

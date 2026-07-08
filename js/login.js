@@ -5,20 +5,25 @@ let role = 'student'
 const tabs = document.querySelectorAll('.role-tab')
 const emailLabel = document.getElementById('email-label')
 const emailInput = document.getElementById('email')
+const passwordInput = document.getElementById('password')
 const submitBtn = document.getElementById('submit-btn')
 const errorMsg = document.getElementById('error-msg')
 const form = document.getElementById('login-form')
+const forgotLink = document.getElementById('forgot-password-link')
 
 const ROLE_TITLE = { student: 'Student', company: 'Company', coordinator: 'Coordinator' }
 
+function applyRoleUI() {
+  tabs.forEach((t) => t.classList.toggle('active', t.dataset.role === role))
+  emailLabel.textContent = role === 'student' ? 'School Email' : 'Email'
+  emailInput.placeholder = role === 'student' ? 'yourname@cit.edu' : 'you@company.com'
+  submitBtn.textContent = `Log In as ${ROLE_TITLE[role]}`
+}
+
 tabs.forEach((tab) => {
   tab.addEventListener('click', () => {
-    tabs.forEach((t) => t.classList.remove('active'))
-    tab.classList.add('active')
     role = tab.dataset.role
-    emailLabel.textContent = role === 'student' ? 'School Email' : 'Email'
-    emailInput.placeholder = role === 'student' ? 'yourname@cit.edu' : 'you@company.com'
-    submitBtn.textContent = `Log In as ${ROLE_TITLE[role]}`
+    applyRoleUI()
   })
 })
 
@@ -27,6 +32,14 @@ function showError(message) {
   errorMsg.style.display = 'block'
 }
 
+// Keep the "Forgot password?" link pointed at whatever email is currently typed in,
+// so the reset page can start pre-filled too.
+function updateForgotLink() {
+  const email = emailInput.value.trim()
+  forgotLink.href = email ? `forgot-password.html?email=${encodeURIComponent(email)}` : 'forgot-password.html'
+}
+emailInput.addEventListener('input', updateForgotLink)
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault()
   errorMsg.style.display = 'none'
@@ -34,12 +47,13 @@ form.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Logging in…'
 
   const email = emailInput.value.trim()
-  const password = document.getElementById('password').value
+  const password = passwordInput.value
 
   const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
   if (signInError) {
-    showError(signInError.message)
+    updateForgotLink()
+    showError(`${signInError.message} — forgotten your password? Use the link below.`)
     submitBtn.disabled = false
     submitBtn.textContent = `Log In as ${ROLE_TITLE[role]}`
     return
@@ -66,3 +80,31 @@ form.addEventListener('submit', async (e) => {
 
   window.location.href = `${profile.role}/dashboard.html`
 })
+
+// Pre-fill from a signup handoff (role + email via query params, password via
+// sessionStorage — see js/signup.js). The password is read once and removed
+// immediately so it doesn't linger in storage.
+const params = new URLSearchParams(window.location.search)
+const prefillRole = params.get('role')
+const prefillEmail = params.get('email')
+
+if (['student', 'company', 'coordinator'].includes(prefillRole)) {
+  role = prefillRole
+}
+if (prefillEmail) {
+  emailInput.value = prefillEmail
+}
+
+let prefillPassword = null
+try {
+  prefillPassword = sessionStorage.getItem('citu_prefill_password')
+  sessionStorage.removeItem('citu_prefill_password')
+} catch {
+  // sessionStorage unavailable — skip silently.
+}
+if (prefillPassword) {
+  passwordInput.value = prefillPassword
+}
+
+applyRoleUI()
+updateForgotLink()
