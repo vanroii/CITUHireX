@@ -24,11 +24,37 @@ if (auth) {
   document.getElementById('website').value = company?.website || ''
   document.getElementById('contact-person').value = company?.contact_person || ''
 
+  const saveBtn = document.getElementById('save-btn')
+  const errorMsg = document.getElementById('error-msg')
+  const successMsg = document.getElementById('success-msg')
+
+  // --- Change tracking: Save stays disabled until something actually differs
+  // from what's currently saved. ---
+  function serializeForm() {
+    return JSON.stringify({
+      companyName: document.getElementById('company-name').value,
+      industry: document.getElementById('industry').value,
+      address: document.getElementById('address').value,
+      website: document.getElementById('website').value,
+      contactPerson: document.getElementById('contact-person').value,
+    })
+  }
+
+  let originalSerialized = serializeForm()
+  saveBtn.disabled = true
+
+  function checkForChanges() {
+    const changed = serializeForm() !== originalSerialized
+    saveBtn.disabled = !changed
+    if (changed) successMsg.style.display = 'none'
+  }
+
+  ;['company-name', 'industry', 'address', 'website', 'contact-person'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', checkForChanges)
+  })
+
   document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault()
-    const saveBtn = document.getElementById('save-btn')
-    const errorMsg = document.getElementById('error-msg')
-    const successMsg = document.getElementById('success-msg')
     errorMsg.style.display = 'none'
     successMsg.style.display = 'none'
 
@@ -68,10 +94,10 @@ if (auth) {
       await supabase.from('profiles').update({ profile_completed: willBeComplete }).eq('id', profile.id)
     }
 
-    saveBtn.disabled = false
     saveBtn.textContent = profile.profile_completed ? 'Save Changes' : 'Complete Profile'
 
     if (error) {
+      saveBtn.disabled = false
       errorMsg.textContent = error.message
       errorMsg.style.display = 'block'
       return
@@ -82,6 +108,10 @@ if (auth) {
       return
     }
 
+    // Saved successfully: this is the new baseline, so Save goes disabled
+    // again until the next actual change.
+    originalSerialized = serializeForm()
+    saveBtn.disabled = true
     successMsg.style.display = 'block'
   })
 }

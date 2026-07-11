@@ -28,11 +28,38 @@ if (auth) {
   document.getElementById('preferred-location').value = student?.preferred_location || ''
   document.getElementById('skills').value = (student?.skills || []).join(', ')
 
+  const saveBtn = document.getElementById('save-btn')
+  const errorMsg = document.getElementById('error-msg')
+  const successMsg = document.getElementById('success-msg')
+
+  // --- Change tracking: Save stays disabled until something actually differs
+  // from what's currently saved. ---
+  function serializeForm() {
+    return JSON.stringify({
+      fullName: document.getElementById('full-name').value,
+      phone: document.getElementById('phone').value,
+      yearLevel: document.getElementById('year-level').value,
+      preferredLocation: document.getElementById('preferred-location').value,
+      skills: document.getElementById('skills').value,
+    })
+  }
+
+  let originalSerialized = serializeForm()
+  saveBtn.disabled = true
+
+  function checkForChanges() {
+    const changed = serializeForm() !== originalSerialized
+    saveBtn.disabled = !changed
+    if (changed) successMsg.style.display = 'none'
+  }
+
+  ;['full-name', 'phone', 'year-level', 'preferred-location', 'skills'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', checkForChanges)
+    document.getElementById(id).addEventListener('change', checkForChanges)
+  })
+
   document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault()
-    const saveBtn = document.getElementById('save-btn')
-    const errorMsg = document.getElementById('error-msg')
-    const successMsg = document.getElementById('success-msg')
     errorMsg.style.display = 'none'
     successMsg.style.display = 'none'
 
@@ -82,10 +109,10 @@ if (auth) {
         .eq('profile_id', profile.id),
     ])
 
-    saveBtn.disabled = false
     saveBtn.textContent = profile.profile_completed ? 'Save Changes' : 'Complete Profile'
 
     if (profileErr || studentErr) {
+      saveBtn.disabled = false
       errorMsg.textContent = (profileErr || studentErr).message
       errorMsg.style.display = 'block'
       return
@@ -96,6 +123,10 @@ if (auth) {
       return
     }
 
+    // Saved successfully: this is the new baseline, so Save goes disabled
+    // again until the next actual change.
+    originalSerialized = serializeForm()
+    saveBtn.disabled = true
     successMsg.style.display = 'block'
   })
 }
