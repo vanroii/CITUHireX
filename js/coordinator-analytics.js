@@ -4,7 +4,7 @@ import { renderSidebar } from '../js/sidebar.js'
 
 const STATUS_LABEL = {
   submitted: 'Submitted', company_review: 'Company Review', coordinator_review: 'Coordinator Review',
-  endorsed: 'Endorsed', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
+  endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
 
 const auth = await requireRole('coordinator')

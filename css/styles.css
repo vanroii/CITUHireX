@@ -1,6 +1,6 @@
 /* ============================================================================
    CITUHireX — Design tokens & shared component styles
-   Colors match the Figma file.
+   Colors match the Figma file exactly.
    ============================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -296,6 +296,7 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
 .row-card .sub-meta { font-size: 12px; color: var(--gray-500); margin: 4px 0 0; }
 .row-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
+/* ---------- Table ---------- */
 
 .data-table { background: #fff; border: 1px solid var(--gray-300); border-radius: var(--radius-md); overflow: hidden; }
 .data-table .thead-row {
@@ -332,6 +333,14 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
   color: var(--gold-light);
 }
 
+.skill-chip {
+  display: inline-block; padding: 4px 10px; border-radius: 20px;
+  background: var(--gray-100); color: var(--gray-700); font-size: 12px; font-weight: 600;
+  margin: 0 6px 6px 0;
+}
+.skill-chip.matched { background: var(--success-bg); color: var(--success); }
+.match-score { font-size: 12px; font-weight: 700; color: var(--success); }
+
 /* ---------- Landing page ---------- */
 
 .navbar {
@@ -344,9 +353,9 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
 .navbar .nav-links a { color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500; }
 .navbar .nav-cta { display: flex; align-items: center; gap: 16px; }
 
-.hero-section { border-radius: 24px; margin: 32px 32px; padding: 96px 64px; }
+.hero-section { border-radius: 24px; margin: 32px 32px; padding: 64px 64px; }
 .hero-section .eyebrow { margin-bottom: 24px; }
-.hero-section h1 { font-size: 52px; font-weight: 800; color: #fff; line-height: 1.15; max-width: 760px; margin: 0 0 24px; }
+.hero-section h1 { font-size: 42px; font-weight: 800; color: #fff; line-height: 1.15; max-width: 760px; margin: 0 0 24px; }
 .hero-section p { color: rgba(255,255,255,0.78); font-size: 18px; max-width: 620px; line-height: 1.6; margin: 0 0 32px; }
 .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
 

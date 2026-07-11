@@ -15,10 +15,10 @@ const STATUS_LABEL = {
   submitted: 'Submitted',
   company_review: 'Company Reviewing',
   coordinator_review: 'Pending Coordinator Review',
-  endorsed: 'Endorsed',
+  endorsed: 'Approved',
   placement_active: 'Placement Active',
   completed: 'Completed',
-  rejected: 'Not Endorsed',
+  rejected: 'Not Approved',
 }
 
 const auth = await requireRole('student')
@@ -28,14 +28,13 @@ if (auth) {
 
   document.getElementById('greeting').textContent = `Welcome back, ${profile.full_name?.split(' ')[0] || 'there'}`
 
-  const [{ data: student }, { data: applications }, { data: openJobs }] = await Promise.all([
+  const [{ data: student }, { data: applications }] = await Promise.all([
     supabase.from('students').select('*, programs(name, required_ojt_hours)').eq('profile_id', profile.id).single(),
     supabase
       .from('applications')
       .select('*, job_postings(title, location, companies(company_name))')
       .eq('student_id', profile.id)
       .order('applied_at', { ascending: false }),
-    supabase.from('job_postings').select('*, companies(company_name)').eq('status', 'open').limit(5),
   ])
 
   document.getElementById('subtitle').textContent = `${student?.programs?.name || ''} · CEA`
@@ -48,11 +47,22 @@ if (auth) {
     <div class="stat-card"><p class="stat-label">Applications Sent</p><p class="stat-value" style="color:var(--maroon);">${apps.length}</p></div>
     <div class="stat-card"><p class="stat-label">Under Coordinator Review</p><p class="stat-value" style="color:var(--warn);">${pendingCount}</p></div>
     <div class="stat-card"><p class="stat-label">Approved Placements</p><p class="stat-value" style="color:var(--success);">${approvedCount}</p></div>
-    <div class="stat-card"><p class="stat-label">Required OJT Hours</p><p class="stat-value" style="color:var(--info);">${student?.completed_hours ?? 0} / ${student?.programs?.required_ojt_hours ?? '—'}</p></div>
   `
 
+  // Open postings scoped to this student's program: eligible_programs either
+  // contains their program id, or is empty (meaning "open to all CEA").
   const jobsList = document.getElementById('open-jobs-list')
-  const jobs = openJobs || []
+  let jobs = []
+  if (student?.program_id) {
+    const { data } = await supabase
+      .from('job_postings')
+      .select('*, companies(company_name)')
+      .eq('status', 'open')
+      .or(`eligible_programs.cs.{${student.program_id}},eligible_programs.eq.{}`)
+      .limit(5)
+    jobs = data || []
+  }
+
   jobsList.innerHTML = jobs.length
     ? jobs
         .map(
@@ -67,7 +77,7 @@ if (auth) {
         </div>`
         )
         .join('')
-    : '<p class="empty-text">No open postings yet — check back soon.</p>'
+    : `<p class="empty-text">No open postings for ${student?.programs?.name || 'your program'} yet — check <a href="jobs.html" style="color:var(--maroon); font-weight:600;">Browse Jobs</a> for openings across all programs.</p>`
 
   if (apps.length > 0) {
     document.getElementById('applications-heading').style.display = 'block'

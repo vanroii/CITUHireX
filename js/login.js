@@ -61,7 +61,7 @@ form.addEventListener('submit', async (e) => {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, profile_completed')
     .eq('id', data.user.id)
     .single()
 
@@ -78,7 +78,9 @@ form.addEventListener('submit', async (e) => {
     return
   }
 
-  window.location.href = `${profile.role}/dashboard.html`
+  window.location.href = profile.profile_completed
+    ? `${profile.role}/dashboard.html`
+    : `${profile.role}/profile.html?setup=1`
 })
 
 // Pre-fill from a signup handoff (role + email via query params, password via

@@ -12,7 +12,7 @@ const STATUS_KIND = {
 }
 const STATUS_LABEL = {
   submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Sent to Coordinator',
-  endorsed: 'Endorsed', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
+  endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
 
 const GRID = '1.6fr 1.5fr 1.1fr 0.9fr 1.1fr 1fr'

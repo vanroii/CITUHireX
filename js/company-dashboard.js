@@ -8,7 +8,7 @@ const STATUS_KIND = {
 }
 const STATUS_LABEL = {
   submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Pending Coordinator',
-  endorsed: 'Endorsed', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
+  endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
 
 const auth = await requireRole('company')

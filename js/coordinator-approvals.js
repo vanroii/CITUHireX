@@ -77,13 +77,13 @@ if (auth) {
             style="width:100%; border:1px solid var(--gray-300); border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:12px;" />
           <div class="row-actions">
             <button class="btn btn-ghost btn-sm decline-btn" data-app-id="${app.id}">Decline</button>
-            <button class="btn btn-primary btn-sm endorse-btn" data-app-id="${app.id}">Endorse</button>
+            <button class="btn btn-primary btn-sm endorse-btn" data-app-id="${app.id}">Approve</button>
           </div>
         </div>
       </div>`
           )
           .join('')
-      : '<p class="empty-text">No applications waiting on endorsement.</p>'
+      : '<p class="empty-text">No applications waiting on approval.</p>'
 
     el.querySelectorAll('.doc-btn').forEach((btn) => {
       btn.addEventListener('click', async () => {

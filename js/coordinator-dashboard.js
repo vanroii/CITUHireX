@@ -72,7 +72,7 @@ if (auth) {
         </div>
         <div class="row-actions">
           <button class="btn btn-ghost btn-sm decline-btn" data-app-id="${app.id}">Decline</button>
-          <button class="btn btn-primary btn-sm endorse-btn" data-app-id="${app.id}">Endorse</button>
+          <button class="btn btn-primary btn-sm endorse-btn" data-app-id="${app.id}">Approve</button>
         </div>
       </div>`
           )

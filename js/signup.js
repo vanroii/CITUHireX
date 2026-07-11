@@ -126,7 +126,8 @@ form.addEventListener('submit', async (e) => {
   }
 
   if (data.session) {
-    window.location.href = `${role}/dashboard.html`
+    // A brand-new signup is never profile_completed yet — go straight to setup.
+    window.location.href = `${role}/profile.html?setup=1`
     return
   }
 
