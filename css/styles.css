@@ -341,6 +341,19 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
 .skill-chip.matched { background: var(--success-bg); color: var(--success); }
 .match-score { font-size: 12px; font-weight: 700; color: var(--success); }
 
+.checkbox-list {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 200px; overflow-y: auto;
+  border: 1px solid var(--gray-300); border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.checkbox-list label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; padding: 4px 0; cursor: pointer;
+}
+.checkbox-list input[type="checkbox"] { width: auto; }
+.checkbox-list input[type="checkbox"]:disabled + span { color: var(--gray-500); }
+
 /* ---------- Landing page ---------- */
 
 .navbar {

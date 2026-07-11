@@ -5,6 +5,7 @@ import { renderSidebar } from '../js/sidebar.js'
 const STATUS_KIND = { pending_approval: 'warn', open: 'success', closed: 'info', archived: 'info' }
 const STATUS_LABEL = { pending_approval: 'Pending Approval', open: 'Open', closed: 'Closed', archived: 'Archived' }
 const DEFAULT_REQUIRED_HOURS = 600
+const MAX_PROGRAMS = 2
 
 const auth = await requireRole('company')
 if (auth) {
@@ -25,17 +26,45 @@ if (auth) {
 
   const { data: programs } = await supabase.from('programs').select('id, name').order('name')
   const allPrograms = programs || []
-  const programSelect = document.getElementById('eligible-programs')
-  allPrograms.forEach((p) => {
-    const opt = document.createElement('option')
-    opt.value = p.id
-    opt.textContent = p.name
-    programSelect.appendChild(opt)
-  })
+
+  // --- Checkbox-based program picker, capped at MAX_PROGRAMS, reusable for
+  // both the create form and any job's edit form. ---
+  function buildProgramCheckboxes(container, selectedIds, groupName, onChange) {
+    container.innerHTML = allPrograms
+      .map(
+        (p) => `
+      <label>
+        <input type="checkbox" class="program-checkbox" name="${groupName}" value="${p.id}" ${selectedIds?.includes(p.id) ? 'checked' : ''} />
+        <span>${p.name}</span>
+      </label>`
+      )
+      .join('')
+    enforceProgramCap(container)
+    container.querySelectorAll('.program-checkbox').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        enforceProgramCap(container)
+        if (onChange) onChange()
+      })
+    })
+  }
+
+  function enforceProgramCap(container) {
+    const boxes = [...container.querySelectorAll('.program-checkbox')]
+    const checkedCount = boxes.filter((b) => b.checked).length
+    boxes.forEach((b) => {
+      b.disabled = !b.checked && checkedCount >= MAX_PROGRAMS
+    })
+  }
+
+  function selectedPrograms(container) {
+    return [...container.querySelectorAll('.program-checkbox:checked')].map((cb) => cb.value)
+  }
+
+  buildProgramCheckboxes(document.getElementById('eligible-programs'), [], 'new-job-programs')
 
   let jobs = []
   let expandedJobId = null
-  const applicantCounts = {} // cached per job id once fetched
+  const applicantCounts = {}
 
   async function loadJobs() {
     const { data } = await supabase
@@ -52,12 +81,6 @@ if (auth) {
     return idList.map((id) => allPrograms.find((p) => p.id === id)?.name || 'Unknown').join(', ')
   }
 
-  function programOptionsHtml(selectedIds, selectId) {
-    return `<select id="${selectId}" multiple size="6">
-      ${allPrograms.map((p) => `<option value="${p.id}" ${selectedIds?.includes(p.id) ? 'selected' : ''}>${p.name}</option>`).join('')}
-    </select>`
-  }
-
   function render() {
     const list = document.getElementById('jobs-list')
     list.innerHTML = jobs.length
@@ -69,19 +92,11 @@ if (auth) {
         const id = header.closest('.job-post-card').dataset.jobId
         expandedJobId = expandedJobId === id ? null : id
         render()
-        if (expandedJobId === id) loadApplicantCount(id)
       })
     })
 
     document.querySelectorAll('.job-post-details').forEach((el) => {
       el.addEventListener('click', (e) => e.stopPropagation())
-    })
-
-    document.querySelectorAll('.save-job-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation()
-        saveJobEdit(btn.dataset.jobId, btn)
-      })
     })
 
     document.querySelectorAll('.delete-job-btn').forEach((btn) => {
@@ -90,6 +105,15 @@ if (auth) {
         deleteJob(btn.dataset.jobId, btn)
       })
     })
+
+    // Wire up the expanded job's edit form (if any) with live change-tracking,
+    // without touching the DOM further — re-rendering on every keystroke would
+    // destroy the input and lose focus/cursor position.
+    if (expandedJobId) {
+      const job = jobs.find((j) => j.id === expandedJobId)
+      if (job) setupEditForm(job)
+      loadApplicantCount(expandedJobId)
+    }
   }
 
   async function loadApplicantCount(jobId) {
@@ -110,7 +134,7 @@ if (auth) {
         <div class="job-post-header" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
           <div>
             <p class="title">${job.title}</p>
-            <p class="meta">${job.location} · ${job.slots_available} slot(s)</p>
+            <p class="meta">${job.location} · ${job.slots_available} slot(s) available</p>
             <p class="sub-meta">${programNames(job.eligible_programs)}</p>
           </div>
           <div class="row-actions">
@@ -129,7 +153,7 @@ if (auth) {
 
       <div class="field">
         <label>Title</label>
-        <input type="text" class="edit-title" value="${job.title.replace(/"/g, '&quot;')}" />
+        <input type="text" class="edit-title" value="${(job.title || '').replace(/"/g, '&quot;')}" />
       </div>
       <div class="field">
         <label>Description</label>
@@ -144,8 +168,8 @@ if (auth) {
         <input type="number" class="edit-slots" value="${job.slots_available}" min="0" />
       </div>
       <div class="field">
-        <label>Eligible Programs</label>
-        ${programOptionsHtml(job.eligible_programs, `edit-programs-${job.id}`)}
+        <label>Eligible Programs (select up to ${MAX_PROGRAMS})</label>
+        <div class="checkbox-list edit-programs" id="edit-programs-${job.id}"></div>
       </div>
       <div class="field">
         <label>Required Skills (comma-separated)</label>
@@ -153,53 +177,98 @@ if (auth) {
       </div>
 
       <p class="form-error edit-job-error" style="display:none;"></p>
+      <p class="edit-job-success" style="display:none; color:var(--success); font-size:14px; font-weight:600;">✓ Changes saved.</p>
 
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-primary btn-sm save-job-btn" data-job-id="${job.id}">Save Changes</button>
+        <button class="btn btn-primary btn-sm save-job-btn" data-job-id="${job.id}" disabled>Save Changes</button>
         <button class="btn btn-ghost btn-sm delete-job-btn" data-job-id="${job.id}">Delete Posting</button>
       </div>
     </div>`
   }
 
-  async function saveJobEdit(jobId, btn) {
-    const card = btn.closest('.job-post-card')
+  function serializeCard(card) {
+    return JSON.stringify({
+      title: card.querySelector('.edit-title').value,
+      description: card.querySelector('.edit-description').value,
+      location: card.querySelector('.edit-location').value,
+      slots: card.querySelector('.edit-slots').value,
+      skills: card.querySelector('.edit-skills').value,
+      programs: selectedPrograms(card.querySelector('.edit-programs')).sort(),
+    })
+  }
+
+  function serializeJob(job) {
+    return JSON.stringify({
+      title: job.title || '',
+      description: job.description || '',
+      location: job.location || '',
+      slots: String(job.slots_available),
+      skills: (job.required_skills || []).join(', '),
+      programs: [...(job.eligible_programs || [])].sort(),
+    })
+  }
+
+  function setupEditForm(job) {
+    const card = document.querySelector(`.job-post-card[data-job-id="${job.id}"]`)
+    if (!card) return
+    const saveBtn = card.querySelector('.save-job-btn')
+    const successMsg = card.querySelector('.edit-job-success')
+    const originalSerialized = serializeJob(job)
+
+    function checkForChanges() {
+      const changed = serializeCard(card) !== originalSerialized
+      saveBtn.disabled = !changed
+      if (changed) successMsg.style.display = 'none'
+    }
+
+    buildProgramCheckboxes(card.querySelector('.edit-programs'), job.eligible_programs, `edit-programs-${job.id}`, checkForChanges)
+
+    ;['edit-title', 'edit-description', 'edit-location', 'edit-slots', 'edit-skills'].forEach((cls) => {
+      card.querySelector(`.${cls}`).addEventListener('input', checkForChanges)
+    })
+
+    saveBtn.addEventListener('click', () => saveJobEdit(job, card, saveBtn, successMsg))
+  }
+
+  async function saveJobEdit(job, card, btn, successMsg) {
     const errorEl = card.querySelector('.edit-job-error')
     errorEl.style.display = 'none'
+    successMsg.style.display = 'none'
     btn.disabled = true
     btn.textContent = 'Saving…'
 
-    const programSel = card.querySelector(`#edit-programs-${jobId}`)
-    const selectedPrograms = [...programSel.selectedOptions].map((o) => o.value)
+    const selected = selectedPrograms(card.querySelector('.edit-programs'))
     const skills = card
       .querySelector('.edit-skills')
       .value.split(',')
       .map((s) => s.trim())
       .filter(Boolean)
 
-    const { error } = await supabase
-      .from('job_postings')
-      .update({
-        title: card.querySelector('.edit-title').value,
-        description: card.querySelector('.edit-description').value,
-        location: card.querySelector('.edit-location').value,
-        slots_available: Number(card.querySelector('.edit-slots').value),
-        eligible_programs: selectedPrograms,
-        required_skills: skills,
-      })
-      .eq('id', jobId)
+    const updates = {
+      title: card.querySelector('.edit-title').value,
+      description: card.querySelector('.edit-description').value,
+      location: card.querySelector('.edit-location').value,
+      slots_available: Number(card.querySelector('.edit-slots').value),
+      eligible_programs: selected,
+      required_skills: skills,
+    }
 
-    btn.disabled = false
+    const { error } = await supabase.from('job_postings').update(updates).eq('id', job.id)
+
     btn.textContent = 'Save Changes'
 
     if (error) {
+      btn.disabled = false
       errorEl.textContent = error.message
       errorEl.style.display = 'block'
       return
     }
 
-    await loadJobs()
-    expandedJobId = jobId
-    render()
+    // Update the local copy so change-tracking compares against the new
+    // saved state, without a full reload (keeps the form/focus intact).
+    Object.assign(job, updates)
+    successMsg.style.display = 'block'
+    btn.disabled = true // matches saved state again — no pending changes
   }
 
   async function deleteJob(jobId, btn) {
@@ -234,7 +303,7 @@ if (auth) {
     submitBtn.disabled = true
     submitBtn.textContent = 'Submitting…'
 
-    const selectedPrograms = [...programSelect.selectedOptions].map((o) => o.value)
+    const selected = selectedPrograms(document.getElementById('eligible-programs'))
     const skills = document
       .getElementById('required-skills')
       .value.split(',')
@@ -249,7 +318,7 @@ if (auth) {
       is_remote: false,
       required_hours: DEFAULT_REQUIRED_HOURS,
       slots_available: Number(document.getElementById('slots').value),
-      eligible_programs: selectedPrograms,
+      eligible_programs: selected,
       required_skills: skills,
       status: 'pending_approval',
     })
@@ -264,6 +333,7 @@ if (auth) {
     }
 
     form.reset()
+    buildProgramCheckboxes(document.getElementById('eligible-programs'), [], 'new-job-programs')
     form.style.display = 'none'
     loadJobs()
   })

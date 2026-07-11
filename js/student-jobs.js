@@ -107,7 +107,7 @@ if (auth) {
           <div>
             <p class="title">${job.title}</p>
             <p class="meta">${job.companies?.company_name || ''} · ${job.location}${job.is_remote ? ' (Remote)' : ''}</p>
-            <p class="sub-meta">${job.slots_available} slot(s)${matchLine ? ` · ${matchLine}` : ''}</p>
+            <p class="sub-meta">${job.slots_available} slot(s) available${matchLine ? ` · ${matchLine}` : ''}</p>
           </div>
           <div class="row-actions">
             ${applied ? '<span class="badge badge-info">Already Applied</span>' : ''}
