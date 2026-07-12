@@ -15,7 +15,7 @@ const STATUS_LABEL = {
   endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
 
-const GRID = '1.6fr 1.5fr 1.1fr 0.9fr 1.1fr 1fr'
+const GRID = '1.5fr 1.4fr 1fr 0.9fr 1fr 1fr 0.8fr'
 
 const auth = await requireRole('company')
 if (auth) {
@@ -35,7 +35,7 @@ if (auth) {
 
     table.innerHTML = `
       <div class="thead-row" style="grid-template-columns: ${GRID};">
-        <span>Applicant</span><span>Job Posting</span><span>Program</span><span>Applied</span><span>Documents</span><span>Status</span>
+        <span>Applicant</span><span>Job Posting</span><span>Program</span><span>Applied</span><span>Documents</span><span>Status</span><span></span>
       </div>
       ${
         list.length
@@ -60,6 +60,9 @@ if (auth) {
                   </select>`
                 : `<span class="badge badge-${STATUS_KIND[a.status] || 'info'}">${STATUS_LABEL[a.status] || a.status}</span>`
             }
+          </span>
+          <span>
+            <a href="messages.html?with=${a.students?.profile_id}" class="btn btn-ghost btn-sm">💬</a>
           </span>
         </div>`
               )

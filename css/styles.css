@@ -241,6 +241,21 @@ input, select, textarea { font-family: inherit; }
   color: rgba(255,255,255,0.75);
   font-size: 14px;
   font-weight: 500;
+  position: relative;
+}
+.nav-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
 }
 .nav-item:hover { background: rgba(255,255,255,0.05); }
 .nav-item.active { background: rgba(255,255,255,0.1); color: var(--gold); font-weight: 700; }
@@ -354,6 +369,22 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
 .checkbox-list input[type="checkbox"] { width: auto; }
 .checkbox-list input[type="checkbox"]:disabled + span { color: var(--gray-500); }
 
+.notif-item.notif-unread {
+  background: rgba(212, 167, 44, 0.08);
+  border-color: var(--gold);
+  border-left-width: 3px;
+}
+.notif-item.notif-unread .title { font-weight: 800; }
+
+.msg-unread-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--maroon);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 /* ---------- Landing page ---------- */
 
 .navbar {
@@ -366,9 +397,9 @@ h2.section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
 .navbar .nav-links a { color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500; }
 .navbar .nav-cta { display: flex; align-items: center; gap: 16px; }
 
-.hero-section { border-radius: 24px; margin: 32px 32px; padding: 64px 64px; }
+.hero-section { border-radius: 24px; margin: 0 32px; padding: 96px 64px; }
 .hero-section .eyebrow { margin-bottom: 24px; }
-.hero-section h1 { font-size: 42px; font-weight: 800; color: #fff; line-height: 1.15; max-width: 760px; margin: 0 0 24px; }
+.hero-section h1 { font-size: 52px; font-weight: 800; color: #fff; line-height: 1.15; max-width: 760px; margin: 0 0 24px; }
 .hero-section p { color: rgba(255,255,255,0.78); font-size: 18px; max-width: 620px; line-height: 1.6; margin: 0 0 32px; }
 .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
 

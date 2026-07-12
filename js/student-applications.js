@@ -35,7 +35,7 @@ if (auth) {
     const { data } = await supabase
       .from('applications')
       .select(
-        '*, job_postings(title, description, location, required_hours, is_remote, required_skills, companies(company_name)), endorsements(decision, remarks, decided_at)'
+        '*, job_postings(title, description, location, required_hours, is_remote, required_skills, company_id, companies(company_name)), endorsements(decision, remarks, decided_at)'
       )
       .eq('student_id', profile.id)
       .order('applied_at', { ascending: false })
@@ -142,6 +142,12 @@ if (auth) {
       <p class="sub-meta">${job.required_hours || '—'} hrs${job.is_remote ? ' · Remote' : ''}</p>
 
       ${endorsementHistory ? `<p class="sub-meta" style="margin:16px 0 0; font-weight:700;">Coordinator history</p>${endorsementHistory}` : ''}
+
+      ${
+        job.company_id
+          ? `<a href="messages.html?with=${job.company_id}" class="btn btn-ghost btn-sm" style="margin-top:16px; display:inline-flex;">💬 Message ${job.companies?.company_name || 'Company'}</a>`
+          : ''
+      }
 
       <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--gray-200);">
         ${

@@ -27,6 +27,7 @@ if (auth) {
           <p class="sub-meta">${job.description || ''}</p>
         </div>
         <div class="row-actions">
+          <a href="messages.html?with=${job.company_id}" class="btn btn-ghost btn-sm">💬 Message</a>
           <button class="btn btn-primary btn-sm approve-job-btn" data-job-id="${job.id}">Approve</button>
         </div>
       </div>`
@@ -50,7 +51,7 @@ if (auth) {
   async function loadApps() {
     const { data: apps } = await supabase
       .from('applications')
-      .select('*, students(programs(name), profiles(full_name)), job_postings(title, companies(company_name))')
+      .select('*, students(profile_id, programs(name), profiles(full_name)), job_postings(title, company_id, companies(company_name))')
       .eq('status', 'coordinator_review')
       .order('applied_at', { ascending: true })
 
@@ -76,6 +77,8 @@ if (auth) {
           <input type="text" class="remarks-input" data-app-id="${app.id}" placeholder="Remarks (optional)"
             style="width:100%; border:1px solid var(--gray-300); border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:12px;" />
           <div class="row-actions">
+            <a href="messages.html?with=${app.students?.profile_id}" class="btn btn-ghost btn-sm">💬 Student</a>
+            <a href="messages.html?with=${app.job_postings?.company_id}" class="btn btn-ghost btn-sm">💬 Company</a>
             <button class="btn btn-ghost btn-sm decline-btn" data-app-id="${app.id}">Decline</button>
             <button class="btn btn-primary btn-sm endorse-btn" data-app-id="${app.id}">Approve</button>
           </div>

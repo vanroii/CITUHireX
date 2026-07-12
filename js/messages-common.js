@@ -11,12 +11,12 @@ if (auth) {
   const threadEl = document.getElementById('thread-panel')
 
   let activeContactId = null
-  let contacts = [] // [{ id, full_name, lastBody, lastAt }]
+  let contacts = [] // [{ id, full_name, lastBody, lastAt, unread }]
 
   async function loadContacts() {
     const { data: msgs } = await supabase
       .from('messages')
-      .select('sender_id, receiver_id, body, sent_at')
+      .select('sender_id, receiver_id, body, sent_at, read_at')
       .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
       .order('sent_at', { ascending: false })
 
@@ -24,11 +24,26 @@ if (auth) {
     ;(msgs || []).forEach((m) => {
       const partnerId = m.sender_id === profile.id ? m.receiver_id : m.sender_id
       if (!byPartner.has(partnerId)) {
-        byPartner.set(partnerId, { id: partnerId, lastBody: m.body, lastAt: m.sent_at })
+        byPartner.set(partnerId, { id: partnerId, lastBody: m.body, lastAt: m.sent_at, unread: false })
+      }
+      // Unread = any message FROM them TO me that hasn't been read yet.
+      if (m.receiver_id === profile.id && m.sender_id === partnerId && !m.read_at) {
+        byPartner.get(partnerId).unread = true
       }
     })
 
     const partnerIds = [...byPartner.keys()]
+
+    // If arriving via a "Message" deep link (?with=<uuid>) for someone with
+    // no existing conversation yet, include them as a contact with 0 messages
+    // so a first message can actually be sent and their name still shows.
+    const params = new URLSearchParams(window.location.search)
+    const deepLinkId = params.get('with')
+    if (deepLinkId && !byPartner.has(deepLinkId)) {
+      byPartner.set(deepLinkId, { id: deepLinkId, lastBody: 'Start a conversation…', lastAt: null, unread: false })
+      partnerIds.push(deepLinkId)
+    }
+
     if (partnerIds.length === 0) {
       contacts = []
       renderContacts()
@@ -40,13 +55,20 @@ if (auth) {
       .select('id, full_name, role')
       .in('id', partnerIds)
 
-    contacts = partnerIds.map((id) => {
-      const p = (partnerProfiles || []).find((pp) => pp.id === id)
-      const meta = byPartner.get(id)
-      return { id, full_name: p?.full_name || 'Unknown', role: p?.role, ...meta }
-    })
+    contacts = partnerIds
+      .map((id) => {
+        const p = (partnerProfiles || []).find((pp) => pp.id === id)
+        const meta = byPartner.get(id)
+        return { id, full_name: p?.full_name || 'Unknown', role: p?.role, ...meta }
+      })
+      // Most recent conversation first; brand-new (no messages yet) contacts float to top too.
+      .sort((a, b) => new Date(b.lastAt || 0) - new Date(a.lastAt || 0))
 
     renderContacts()
+
+    if (deepLinkId && !activeContactId) {
+      openThread(deepLinkId)
+    }
   }
 
   function renderContacts() {
@@ -55,7 +77,7 @@ if (auth) {
           .map(
             (c) => `
       <div class="msg-contact ${c.id === activeContactId ? 'active' : ''}" data-id="${c.id}">
-        <p class="name">${c.full_name}</p>
+        <p class="name">${c.full_name}${c.unread ? ' <span class="msg-unread-dot"></span>' : ''}</p>
         <p class="preview">${c.lastBody || ''}</p>
       </div>`
           )
@@ -92,16 +114,29 @@ if (auth) {
     document.getElementById('msg-input').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') sendMessage()
     })
+
+    // Mark any messages they sent me as read now that I've opened the thread.
+    const unreadIds = (msgs || [])
+      .filter((m) => m.receiver_id === profile.id && m.sender_id === partnerId && !m.read_at)
+      .map((m) => m.id)
+    if (unreadIds.length) {
+      await supabase.from('messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds)
+      const contact = contacts.find((c) => c.id === partnerId)
+      if (contact) contact.unread = false
+      renderContacts()
+    }
   }
 
   function renderMessages(msgs) {
     const scroll = document.getElementById('msg-scroll')
     if (!scroll) return
-    scroll.innerHTML = msgs
-      .map(
-        (m) => `<div class="msg-bubble ${m.sender_id === profile.id ? 'mine' : 'theirs'}">${escapeHtml(m.body)}</div>`
-      )
-      .join('')
+    scroll.innerHTML = msgs.length
+      ? msgs
+          .map(
+            (m) => `<div class="msg-bubble ${m.sender_id === profile.id ? 'mine' : 'theirs'}">${escapeHtml(m.body)}</div>`
+          )
+          .join('')
+      : '<p class="empty-text" style="padding:16px;">No messages yet — say hello!</p>'
     scroll.scrollTop = scroll.scrollHeight
   }
 
@@ -129,7 +164,7 @@ if (auth) {
 
   // Realtime: refresh the open thread (and contact list) when a relevant message arrives.
   supabase
-    .channel('messages-live')
+    .channel(`messages-live-${profile.id}`)
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'messages' },

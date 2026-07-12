@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications — CITUHireX</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="dash-shell">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <h1>Notifications</h1>
+          <p class="subtitle">Click any notification to mark it as read</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="mark-all-read-btn" style="display:none;">Mark all as read</button>
+      </div>
+
+      <div class="list-col" id="notifications-list">
+        <p class="loading-text">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/notifications-common.js"></script>
+</body>
+</html>
