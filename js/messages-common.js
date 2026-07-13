@@ -130,11 +130,25 @@ if (auth) {
   function renderMessages(msgs) {
     const scroll = document.getElementById('msg-scroll')
     if (!scroll) return
+
+    const lastMineIndex = msgs.map((m) => m.sender_id === profile.id).lastIndexOf(true)
+
     scroll.innerHTML = msgs.length
       ? msgs
-          .map(
-            (m) => `<div class="msg-bubble ${m.sender_id === profile.id ? 'mine' : 'theirs'}">${escapeHtml(m.body)}</div>`
-          )
+          .map((m, i) => {
+            const mine = m.sender_id === profile.id
+            const time = new Date(m.sent_at).toLocaleString(undefined, {
+              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+            })
+            const showStatus = mine && i === lastMineIndex
+            const statusText = showStatus ? (m.read_at ? 'Seen' : 'Sent') : ''
+
+            return `
+        <div class="msg-bubble-row ${mine ? 'mine' : 'theirs'}">
+          <div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${escapeHtml(m.body)}</div>
+          <p class="msg-meta">${time}${statusText ? ` · ${statusText}` : ''}</p>
+        </div>`
+          })
           .join('')
       : '<p class="empty-text" style="padding:16px;">No messages yet — say hello!</p>'
     scroll.scrollTop = scroll.scrollHeight
@@ -162,12 +176,14 @@ if (auth) {
     return div.innerHTML
   }
 
-  // Realtime: refresh the open thread (and contact list) when a relevant message arrives.
+  // Realtime: refresh the open thread (and contact list) when a message
+  // arrives OR gets marked read (event: '*' covers both) — the latter is
+  // what flips "Sent" to "Seen" live without needing to reopen the thread.
   supabase
     .channel(`messages-live-${profile.id}`)
     .on(
       'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'messages' },
+      { event: '*', schema: 'public', table: 'messages' },
       (payload) => {
         const m = payload.new
         if (m.sender_id !== profile.id && m.receiver_id !== profile.id) return

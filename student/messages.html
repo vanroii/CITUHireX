@@ -5,22 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Messages — CITUHireX</title>
   <link rel="stylesheet" href="../css/styles.css" />
-  <style>
-    .msg-shell { display: flex; gap: 24px; height: calc(100vh - 200px); }
-    .msg-contacts { width: 300px; flex-shrink: 0; overflow-y: auto; }
-    .msg-contact { padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 6px; }
-    .msg-contact:hover { background: var(--gray-100); }
-    .msg-contact.active { background: var(--gray-100); }
-    .msg-contact .name { font-weight: 700; font-size: 14px; margin: 0 0 2px; }
-    .msg-contact .preview { font-size: 12px; color: var(--gray-500); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .msg-thread { flex: 1; display: flex; flex-direction: column; }
-    .msg-scroll { flex: 1; overflow-y: auto; padding: 8px; }
-    .msg-bubble { max-width: 70%; padding: 10px 16px; border-radius: 14px; margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
-    .msg-bubble.mine { background: var(--maroon); color: #fff; margin-left: auto; }
-    .msg-bubble.theirs { background: var(--gray-100); color: var(--ink); }
-    .msg-input-row { display: flex; gap: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200); }
-    .msg-input-row input { flex: 1; }
-  </style>
 </head>
 <body>
   <div class="dash-shell">
@@ -33,7 +17,7 @@
         </div>
       </div>
 
-      <div class="msg-shell card" style="padding:16px;">
+      <div class="msg-shell">
         <div class="msg-contacts" id="contacts-list">
           <p class="loading-text">Loading…</p>
         </div>
