@@ -23,7 +23,14 @@ if (auth) {
   const { data: company } = await supabase.from('companies').select('*').eq('profile_id', profile.id).single()
   document.getElementById('greeting').textContent = company?.company_name || profile.full_name
 
-  if (!company?.is_verified) {
+  const verificationStatus = company?.verification_status || 'pending'
+  if (verificationStatus === 'denied') {
+    document.getElementById('verify-notice').innerHTML = `
+      <div class="form-note" style="background:var(--warn-bg); border-color:rgba(184,134,11,0.3);">
+        Your verification request was denied by a coordinator. Job postings stay hidden from students —
+        check your <a href="profile.html" style="color:var(--warn); font-weight:600;">Company Profile</a> for details.
+      </div>`
+  } else if (verificationStatus !== 'verified') {
     document.getElementById('verify-notice').innerHTML = `
       <div class="form-note">
         Your company account is awaiting coordinator verification. Job postings won't be visible to

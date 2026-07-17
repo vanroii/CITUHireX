@@ -17,11 +17,6 @@
         </div>
       </div>
 
-      <div id="setup-banner" style="display:none;" class="form-note">
-        Welcome! Finish setting up your company profile below to unlock the rest of CITUHireX — you
-        won't be able to post jobs, view applicants, or reach the dashboard until this is complete.
-      </div>
-
       <div id="verify-badge"></div>
 
       <form id="profile-form" class="card">
@@ -31,11 +26,13 @@
         </div>
         <div class="field">
           <label>Industry</label>
-          <input type="text" id="industry" />
+          <select id="industry">
+            <option value="">Select an industry</option>
+          </select>
         </div>
         <div class="field">
           <label>Address</label>
-          <input type="text" id="address" />
+          <input type="text" id="address" placeholder="Street, Barangay, City" />
         </div>
         <div class="field">
           <label>Website</label>
@@ -49,7 +46,7 @@
         <p class="form-error" id="error-msg" style="display:none;"></p>
         <p style="color:var(--success); font-size:14px; font-weight:600; display:none;" id="success-msg">Saved.</p>
 
-        <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
+        <button type="submit" class="btn btn-primary" id="save-btn" disabled>Save Changes</button>
       </form>
     </main>
   </div>

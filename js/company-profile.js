@@ -1,25 +1,35 @@
 import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
+import { INDUSTRIES } from '../js/industries.js'
 
-const auth = await requireRole('company', '..', { allowIncompleteProfile: true })
+// Companies are never gated behind profile completion — this is just a
+// normal editable profile page.
+const auth = await requireRole('company')
 if (auth) {
   const { profile } = auth
   renderSidebar({ role: 'company', activePage: 'profile.html', profile })
 
   const { data: company } = await supabase.from('companies').select('*').eq('profile_id', profile.id).single()
 
-  if (!profile.profile_completed) {
-    document.getElementById('setup-banner').style.display = 'block'
-    document.getElementById('save-btn').textContent = 'Complete Profile'
+  const verificationStatus = company?.verification_status || 'pending'
+  const verifyBadgeHtml = {
+    verified: '<span class="badge badge-success" style="margin-bottom:20px; display:inline-flex;">Verified Partner</span>',
+    denied: '<div class="form-note" style="background:var(--warn-bg); border-color:rgba(184,134,11,0.3);">Your verification request was denied by a coordinator. Job postings stay hidden from students. Update your profile and contact your coordinator if you believe this was a mistake.</div>',
+    pending: '<div class="form-note">Not yet verified by a coordinator — job postings stay hidden from students until then.</div>',
   }
+  document.getElementById('verify-badge').innerHTML = verifyBadgeHtml[verificationStatus]
 
-  document.getElementById('verify-badge').innerHTML = company?.is_verified
-    ? '<span class="badge badge-success" style="margin-bottom:20px; display:inline-flex;">Verified Partner</span>'
-    : '<div class="form-note">Not yet verified by a coordinator — job postings stay hidden from students until then.</div>'
+  const industrySelect = document.getElementById('industry')
+  INDUSTRIES.forEach((name) => {
+    const opt = document.createElement('option')
+    opt.value = name
+    opt.textContent = name
+    industrySelect.appendChild(opt)
+  })
 
   document.getElementById('company-name').value = company?.company_name || ''
-  document.getElementById('industry').value = company?.industry || ''
+  industrySelect.value = company?.industry || ''
   document.getElementById('address').value = company?.address || ''
   document.getElementById('website').value = company?.website || ''
   document.getElementById('contact-person').value = company?.contact_person || ''
@@ -28,12 +38,10 @@ if (auth) {
   const errorMsg = document.getElementById('error-msg')
   const successMsg = document.getElementById('success-msg')
 
-  // --- Change tracking: Save stays disabled until something actually differs
-  // from what's currently saved. ---
   function serializeForm() {
     return JSON.stringify({
       companyName: document.getElementById('company-name').value,
-      industry: document.getElementById('industry').value,
+      industry: industrySelect.value,
       address: document.getElementById('address').value,
       website: document.getElementById('website').value,
       contactPerson: document.getElementById('contact-person').value,
@@ -51,50 +59,28 @@ if (auth) {
 
   ;['company-name', 'industry', 'address', 'website', 'contact-person'].forEach((id) => {
     document.getElementById(id).addEventListener('input', checkForChanges)
+    document.getElementById(id).addEventListener('change', checkForChanges)
   })
 
   document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault()
     errorMsg.style.display = 'none'
     successMsg.style.display = 'none'
-
-    const industry = document.getElementById('industry').value.trim()
-    const address = document.getElementById('address').value.trim()
-    const contactPerson = document.getElementById('contact-person').value.trim()
-
-    if (!profile.profile_completed) {
-      const missing = []
-      if (!industry) missing.push('industry')
-      if (!address) missing.push('address')
-      if (!contactPerson) missing.push('a contact person')
-      if (missing.length) {
-        errorMsg.textContent = `Please add ${missing.join(', ')} to complete your profile.`
-        errorMsg.style.display = 'block'
-        return
-      }
-    }
-
     saveBtn.disabled = true
     saveBtn.textContent = 'Saving…'
-
-    const willBeComplete = profile.profile_completed || (!!industry && !!address && !!contactPerson)
 
     const { error } = await supabase
       .from('companies')
       .update({
         company_name: document.getElementById('company-name').value,
-        industry,
-        address,
+        industry: industrySelect.value,
+        address: document.getElementById('address').value,
         website: document.getElementById('website').value,
-        contact_person: contactPerson,
+        contact_person: document.getElementById('contact-person').value,
       })
       .eq('profile_id', profile.id)
 
-    if (!error) {
-      await supabase.from('profiles').update({ profile_completed: willBeComplete }).eq('id', profile.id)
-    }
-
-    saveBtn.textContent = profile.profile_completed ? 'Save Changes' : 'Complete Profile'
+    saveBtn.textContent = 'Save Changes'
 
     if (error) {
       saveBtn.disabled = false
@@ -103,13 +89,6 @@ if (auth) {
       return
     }
 
-    if (!profile.profile_completed && willBeComplete) {
-      window.location.href = 'dashboard.html'
-      return
-    }
-
-    // Saved successfully: this is the new baseline, so Save goes disabled
-    // again until the next actual change.
     originalSerialized = serializeForm()
     saveBtn.disabled = true
     successMsg.style.display = 'block'

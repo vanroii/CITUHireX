@@ -1,4 +1,6 @@
 import { supabase } from './supabase-client.js'
+import { CEBU_LOCATIONS } from './cebu-locations.js'
+import { INDUSTRIES } from './industries.js'
 
 let role = 'student'
 
@@ -15,6 +17,8 @@ const submitBtn = document.getElementById('submit-btn')
 const brandHeading = document.getElementById('brand-heading')
 const brandCopy = document.getElementById('brand-copy')
 const successPanel = document.getElementById('success-panel')
+const citySelect = document.getElementById('city')
+const barangaySelect = document.getElementById('barangay')
 
 const BRAND = {
   student: {
@@ -64,6 +68,49 @@ supabase
     })
   })
 
+// Populate the standardized industry dropdown.
+INDUSTRIES.forEach((name) => {
+  const opt = document.createElement('option')
+  opt.value = name
+  opt.textContent = name
+  document.getElementById('industry').appendChild(opt)
+})
+
+// Populate City/Municipality, then cascade Barangay options on selection.
+Object.keys(CEBU_LOCATIONS).forEach((city) => {
+  const opt = document.createElement('option')
+  opt.value = city
+  opt.textContent = city
+  citySelect.appendChild(opt)
+})
+
+citySelect.addEventListener('change', () => {
+  const city = citySelect.value
+  barangaySelect.innerHTML = ''
+
+  if (!city) {
+    barangaySelect.disabled = true
+    const opt = document.createElement('option')
+    opt.value = ''
+    opt.textContent = 'Select city/municipality first'
+    barangaySelect.appendChild(opt)
+    return
+  }
+
+  barangaySelect.disabled = false
+  const placeholder = document.createElement('option')
+  placeholder.value = ''
+  placeholder.textContent = 'Select barangay'
+  barangaySelect.appendChild(placeholder)
+
+  CEBU_LOCATIONS[city].forEach((brgy) => {
+    const opt = document.createElement('option')
+    opt.value = brgy
+    opt.textContent = brgy
+    barangaySelect.appendChild(opt)
+  })
+})
+
 function showError(message) {
   errorMsg.textContent = message
   errorMsg.style.display = 'block'
@@ -86,9 +133,22 @@ form.addEventListener('submit', async (e) => {
     showError('Please select your program.')
     return
   }
+  if (role === 'company') {
+    if (!citySelect.value || !barangaySelect.value) {
+      showError('Please select your company\'s city/municipality and barangay.')
+      return
+    }
+    if (!document.getElementById('industry').value) {
+      showError('Please select an industry.')
+      return
+    }
+  }
 
   submitBtn.disabled = true
   submitBtn.textContent = 'Creating account…'
+
+  const street = document.getElementById('street')?.value.trim()
+  const address = [street, barangaySelect.value, citySelect.value].filter(Boolean).join(', ')
 
   const metadata =
     role === 'student'
@@ -103,14 +163,15 @@ form.addEventListener('submit', async (e) => {
           role,
           full_name: fullName,
           company_name: document.getElementById('company-name').value.trim(),
-          industry: document.getElementById('industry').value.trim(),
-          address: document.getElementById('address').value.trim(),
+          industry: document.getElementById('industry').value,
+          address,
           contact_person: document.getElementById('contact-person').value.trim(),
         }
 
   // profiles (+ the matching students/companies row) are created automatically
   // by a database trigger reading this metadata — see
-  // supabase/migrations/0008_handle_new_user_trigger.sql
+  // supabase/migrations/0008_handle_new_user_trigger.sql and
+  // supabase/migrations/0019_student_only_profile_gate.sql
   const { data, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -126,8 +187,8 @@ form.addEventListener('submit', async (e) => {
   }
 
   if (data.session) {
-    // A brand-new signup is never profile_completed yet — go straight to setup.
-    window.location.href = `${role}/profile.html?setup=1`
+    // Only students have a profile-completion gate — companies go straight to their dashboard.
+    window.location.href = role === 'student' ? `${role}/profile.html?setup=1` : `${role}/dashboard.html`
     return
   }
 

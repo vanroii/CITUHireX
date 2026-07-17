@@ -71,7 +71,6 @@ if (auth) {
           <div>
             <p class="title">${job.title}</p>
             <p class="meta">${job.companies?.company_name || ''} · ${job.location}</p>
-            <p class="sub-meta">${job.required_hours} hrs</p>
           </div>
           <span class="badge badge-info">Open</span>
         </div>`

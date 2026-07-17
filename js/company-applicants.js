@@ -3,9 +3,10 @@ import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
 import { getSignedUrl } from '../js/storage.js'
 
-// Companies can only move an application through their part of the workflow.
-// Coordinator-only outcomes (endorsed/rejected) happen on the Coordinator side.
-const COMPANY_STATUSES = ['submitted', 'company_review', 'coordinator_review']
+// Companies can move an application through their part of the workflow, or
+// decline it outright. Coordinator-only outcome (endorsed) still happens on
+// the Coordinator side.
+const COMPANY_STATUSES = ['submitted', 'company_review', 'coordinator_review', 'rejected']
 const STATUS_KIND = {
   submitted: 'info', company_review: 'info', coordinator_review: 'warn',
   endorsed: 'success', placement_active: 'success', completed: 'success', rejected: 'warn',
@@ -13,6 +14,12 @@ const STATUS_KIND = {
 const STATUS_LABEL = {
   submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Sent to Coordinator',
   endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
+}
+// Dropdown option text differs slightly from the badge label above —
+// "Decline" reads as the company's action, "Rejected" reads as the outcome
+// (used for the badge once an application is no longer editable elsewhere).
+const COMPANY_DROPDOWN_LABEL = {
+  submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Sent to Coordinator', rejected: 'Decline',
 }
 
 const GRID = '1.5fr 1.4fr 1fr 0.9fr 1fr 1fr 0.8fr'
@@ -56,7 +63,7 @@ if (auth) {
             ${
               COMPANY_STATUSES.includes(a.status)
                 ? `<select class="status-select" data-app-id="${a.id}" style="border:1px solid var(--gray-300); border-radius:8px; padding:6px 10px; font-size:13px;">
-                    ${COMPANY_STATUSES.map((s) => `<option value="${s}" ${s === a.status ? 'selected' : ''}>${STATUS_LABEL[s]}</option>`).join('')}
+                    ${COMPANY_STATUSES.map((s) => `<option value="${s}" ${s === a.status ? 'selected' : ''}>${COMPANY_DROPDOWN_LABEL[s]}</option>`).join('')}
                   </select>`
                 : `<span class="badge badge-${STATUS_KIND[a.status] || 'info'}">${STATUS_LABEL[a.status] || a.status}</span>`
             }

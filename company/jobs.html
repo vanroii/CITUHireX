@@ -34,19 +34,22 @@
         </div>
         <div class="field">
           <label>Location</label>
-          <input type="text" id="location" required placeholder="Cebu IT Park" />
+          <p class="sub-meta" id="location-display" style="margin:0 0 4px;">Loading your company address…</p>
+          <p class="sub-meta" style="margin:0; color:var(--gray-500);">Synced from your <a href="profile.html" style="color:var(--maroon); font-weight:600;">Company Profile</a> address — update it there if this changes.</p>
         </div>
         <div class="field">
           <label>Slots Available</label>
           <input type="number" id="slots" required value="1" min="1" />
         </div>
         <div class="field">
-          <label>Eligible Programs (select up to 2 — leave unchecked for "open to all CEA")</label>
+          <label>Eligible Programs (leave unselected for "open to all CEA")</label>
           <div id="eligible-programs" class="checkbox-list"></div>
         </div>
         <div class="field">
-          <label>Required Skills (comma-separated)</label>
-          <input type="text" id="required-skills" placeholder="JavaScript, React, SQL" />
+          <label>Required Skills — updates based on Eligible Programs selected above</label>
+          <div id="required-skills" class="checkbox-list" style="max-height:260px;">
+            <p class="sub-meta">Loading skills…</p>
+          </div>
         </div>
 
         <p class="form-error" id="form-error" style="display:none;"></p>

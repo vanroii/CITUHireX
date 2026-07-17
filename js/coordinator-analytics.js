@@ -31,13 +31,14 @@ if (auth) {
     programCounts[name] = (programCounts[name] || 0) + 1
   })
 
-  const completedCount = statusCounts.completed || 0
-  const activeCount = statusCounts.placement_active || 0
+  const approvedCount = ['endorsed', 'placement_active', 'completed'].reduce(
+    (sum, s) => sum + (statusCounts[s] || 0),
+    0
+  )
 
   document.getElementById('stat-row').innerHTML = `
     <div class="stat-card"><p class="stat-label">Total Applications</p><p class="stat-value" style="color:var(--maroon);">${appList.length}</p></div>
-    <div class="stat-card"><p class="stat-label">Active Placements</p><p class="stat-value" style="color:var(--success);">${activeCount}</p></div>
-    <div class="stat-card"><p class="stat-label">Completed Placements</p><p class="stat-value" style="color:var(--info);">${completedCount}</p></div>
+    <div class="stat-card"><p class="stat-label">Approved Placements</p><p class="stat-value" style="color:var(--success);">${approvedCount}</p></div>
     <div class="stat-card"><p class="stat-label">Students / Companies</p><p class="stat-value" style="color:var(--warn);">${studentCount.count || 0} / ${companyCount.count || 0}</p></div>
   `
 

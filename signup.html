@@ -83,11 +83,25 @@
             </div>
             <div class="field">
               <label>Industry</label>
-              <input type="text" id="industry" placeholder="Information Technology" />
+              <select id="industry">
+                <option value="">Select an industry</option>
+              </select>
             </div>
             <div class="field">
-              <label>Address</label>
-              <input type="text" id="address" placeholder="Cebu IT Park, Cebu City" />
+              <label>City / Municipality</label>
+              <select id="city">
+                <option value="">Select city/municipality</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Barangay</label>
+              <select id="barangay" disabled>
+                <option value="">Select city/municipality first</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Street / Building (optional)</label>
+              <input type="text" id="street" placeholder="e.g. Cebu IT Park, Unit 4B ABC Tower" />
             </div>
             <div class="field">
               <label>Contact Person</label>

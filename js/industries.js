@@ -1,0 +1,30 @@
+// Standardized industry categories offered during company signup — kept
+// broad enough to cover CEA-aligned fields (engineering, architecture, IT)
+// as well as the general range of OJT host companies.
+export const INDUSTRIES = [
+  'Information Technology / Software',
+  'Business Process Outsourcing (BPO)',
+  'Engineering Services',
+  'Architecture & Design',
+  'Construction & Real Estate',
+  'Manufacturing',
+  'Electronics & Semiconductors',
+  'Automotive',
+  'Energy & Utilities',
+  'Telecommunications',
+  'Banking & Finance',
+  'Insurance',
+  'Retail & E-commerce',
+  'Hospitality & Tourism',
+  'Food & Beverage',
+  'Healthcare',
+  'Education',
+  'Logistics & Transportation',
+  'Shipping & Maritime',
+  'Agriculture & Agribusiness',
+  'Mining',
+  'Media & Advertising',
+  'Government / Public Sector',
+  'Non-Profit / NGO',
+  'Other',
+]
