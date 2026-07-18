@@ -9,7 +9,7 @@
 <body>
   <div class="dash-shell">
     <div id="sidebar-root"></div>
-    <main class="main-content" style="max-width: 640px;">
+    <main class="main-content">
       <div class="topbar">
         <div>
           <h1>My Profile</h1>
@@ -22,7 +22,7 @@
         able to reach the dashboard, job listings, or messages until this is complete.
       </div>
 
-      <form id="profile-form" class="card">
+      <form id="profile-form" class="card" style="padding:24px; margin-top:24px; margin-bottom:24px;">
         <div class="field">
           <label>Full Name</label>
           <input type="text" id="full-name" />
@@ -71,7 +71,7 @@
         <p class="form-error" id="error-msg" style="display:none;"></p>
         <p style="color:var(--success); font-size:14px; font-weight:600; display:none;" id="success-msg">Saved.</p>
 
-        <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
+        <button type="submit" class="btn btn-primary" style="margin-top:12px;" id="save-btn">Save Changes</button>
       </form>
     </main>
   </div>

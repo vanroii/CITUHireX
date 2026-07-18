@@ -46,7 +46,7 @@ if (auth) {
   document.getElementById('stat-row').innerHTML = `
     <div class="stat-card"><p class="stat-label">Applications Sent</p><p class="stat-value" style="color:var(--maroon);">${apps.length}</p></div>
     <div class="stat-card"><p class="stat-label">Under Coordinator Review</p><p class="stat-value" style="color:var(--warn);">${pendingCount}</p></div>
-    <div class="stat-card"><p class="stat-label">Approved Placements</p><p class="stat-value" style="color:var(--success);">${approvedCount}</p></div>
+    <div class="stat-card"><p class="stat-label">Approved Applications</p><p class="stat-value" style="color:var(--success);">${approvedCount}</p></div>
   `
 
   // Open postings scoped to this student's program: eligible_programs either

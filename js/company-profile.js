@@ -16,6 +16,7 @@ if (auth) {
   const verifyBadgeHtml = {
     verified: '<span class="badge badge-success" style="margin-bottom:20px; display:inline-flex;">Verified Partner</span>',
     denied: '<div class="form-note" style="background:var(--warn-bg); border-color:rgba(184,134,11,0.3);">Your verification request was denied by a coordinator. Job postings stay hidden from students. Update your profile and contact your coordinator if you believe this was a mistake.</div>',
+    terminated: '<div class="form-note" style="background:var(--warn-bg); border-color:rgba(184,134,11,0.3);">Your partnership with CITUHireX has been terminated by a coordinator. Job postings stay hidden from students. Contact your coordinator if you believe this was a mistake.</div>',
     pending: '<div class="form-note">Not yet verified by a coordinator — job postings stay hidden from students until then.</div>',
   }
   document.getElementById('verify-badge').innerHTML = verifyBadgeHtml[verificationStatus]

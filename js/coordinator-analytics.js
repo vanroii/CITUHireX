@@ -7,14 +7,18 @@ const STATUS_LABEL = {
   endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
 
+const JOB_STATUS_LABEL = {
+  pending_approval: 'Pending Approval', open: 'Open', closed: 'Closed', declined: 'Declined', archived: 'Archived',
+}
+
 const auth = await requireRole('coordinator')
 if (auth) {
   const { profile } = auth
   renderSidebar({ role: 'coordinator', activePage: 'analytics.html', profile })
 
-  const [{ data: apps }, { data: students }, companyCount, studentCount] = await Promise.all([
+  const [{ data: apps }, { data: jobs }, companyCount, studentCount] = await Promise.all([
     supabase.from('applications').select('status'),
-    supabase.from('students').select('programs(name)'),
+    supabase.from('job_postings').select('status'),
     supabase.from('companies').select('*', { count: 'exact', head: true }),
     supabase.from('students').select('*', { count: 'exact', head: true }),
   ])
@@ -25,10 +29,10 @@ if (auth) {
     statusCounts[a.status] = (statusCounts[a.status] || 0) + 1
   })
 
-  const programCounts = {}
-  ;(students || []).forEach((s) => {
-    const name = s.programs?.name || 'Unassigned'
-    programCounts[name] = (programCounts[name] || 0) + 1
+  const jobList = jobs || []
+  const jobStatusCounts = {}
+  jobList.forEach((j) => {
+    jobStatusCounts[j.status] = (jobStatusCounts[j.status] || 0) + 1
   })
 
   const approvedCount = ['endorsed', 'placement_active', 'completed'].reduce(
@@ -45,24 +49,20 @@ if (auth) {
   const brandColors = ['#7A0C1E', '#D4A72C', '#2563A8', '#2E7D4F', '#B8860B', '#A31D33', '#4A0812', '#8C8078']
 
   new Chart(document.getElementById('status-chart'), {
-    type: 'bar',
+    type: 'pie',
     data: {
       labels: Object.keys(statusCounts).map((s) => STATUS_LABEL[s] || s),
       datasets: [{ data: Object.values(statusCounts), backgroundColor: brandColors }],
     },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } } },
   })
 
-  new Chart(document.getElementById('program-chart'), {
-    type: 'bar',
+  new Chart(document.getElementById('jobs-chart'), {
+    type: 'doughnut',
     data: {
-      labels: Object.keys(programCounts),
-      datasets: [{ data: Object.values(programCounts), backgroundColor: brandColors }],
+      labels: Object.keys(jobStatusCounts).map((s) => JOB_STATUS_LABEL[s] || s),
+      datasets: [{ data: Object.values(jobStatusCounts), backgroundColor: brandColors }],
     },
-    options: {
-      indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
-    },
+    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } } },
   })
 }

@@ -26,10 +26,10 @@ if (auth) {
     const pendingApps = apps || []
 
     document.getElementById('stat-row').innerHTML = `
-      <div class="stat-card"><p class="stat-label">Total Students</p><p class="stat-value" style="color:var(--maroon);">${studentCount.count || 0}</p></div>
+      <div class="stat-card"><p class="stat-label">Total Students On Your Program</p><p class="stat-value" style="color:var(--maroon);">${studentCount.count || 0}</p></div>
       <div class="stat-card"><p class="stat-label">Partner Companies</p><p class="stat-value" style="color:var(--info);">${companyCount.count || 0}</p></div>
-      <div class="stat-card"><p class="stat-label">Approved Placements</p><p class="stat-value" style="color:var(--success);">${placedCount.count || 0}</p></div>
       <div class="stat-card"><p class="stat-label">Awaiting Your Review</p><p class="stat-value" style="color:var(--warn);">${pendingJobs.length + pendingApps.length}</p></div>
+      <div class="stat-card"><p class="stat-label">Approved Applications</p><p class="stat-value" style="color:var(--success);">${placedCount.count || 0}</p></div>
     `
 
     const jobsList = document.getElementById('pending-jobs')
@@ -62,6 +62,7 @@ if (auth) {
           <p class="meta">${app.job_postings?.companies?.company_name || ''} · ${app.students?.programs?.name || ''}</p>
         </div>
         <div class="row-actions">
+          <span class="badge badge-warn">Pending Approval</span>
           <a href="approvals.html" class="btn btn-primary btn-sm">View</a>
         </div>
       </div>`

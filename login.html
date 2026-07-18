@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log In — CITUHireX</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .password-field { position: relative; }
+    .password-field input { padding-right: 64px; }
+    .password-toggle-btn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; font-size: 12px; font-weight: 700;
+      color: var(--maroon); padding: 6px 8px; cursor: pointer;
+      opacity: 0; pointer-events: none; transition: opacity 0.12s ease;
+    }
+    .password-field input:focus ~ .password-toggle-btn,
+    .password-field.has-value .password-toggle-btn {
+      opacity: 1; pointer-events: auto;
+    }
+  </style>
 </head>
 <body>
   <div class="auth-shell">
@@ -14,7 +28,7 @@
         <span class="logo-text">CITUHireX</span>
       </div>
       <h1>One platform.<br />Three roles.<br />Zero manual tracking.</h1>
-      <p>Coordinators get full visibility into every application, endorsement, and placement — replacing spreadsheets and Facebook groups with an auditable system.</p>
+      <p>Coordinators get full visibility into every job, application, and approval — replacing spreadsheets and Facebook groups with an auditable system.</p>
     </div>
 
     <div class="auth-form-panel">
@@ -36,7 +50,10 @@
           </div>
           <div class="field">
             <label>Password</label>
-            <input type="password" id="password" required placeholder="••••••••" />
+            <div class="password-field" id="password-field">
+              <input type="password" id="password" required placeholder="••••••••" />
+              <button type="button" class="password-toggle-btn" id="toggle-password">Show</button>
+            </div>
             <a href="forgot-password.html" id="forgot-password-link" style="align-self:flex-end; font-size:13px; font-weight:600; color:var(--maroon); margin-top:4px;">Forgot password?</a>
           </div>
 

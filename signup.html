@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up — CITUHireX</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .password-field { position: relative; }
+    .password-field input { padding-right: 64px; }
+    .password-toggle-btn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; font-size: 12px; font-weight: 700;
+      color: var(--maroon); padding: 6px 8px; cursor: pointer;
+      opacity: 0; pointer-events: none; transition: opacity 0.12s ease;
+    }
+    /* Visible whenever the field is focused, or once it has a value —
+       so it stays visible if you click elsewhere but keep typing/tabbing. */
+    .password-field input:focus ~ .password-toggle-btn,
+    .password-field.has-value .password-toggle-btn {
+      opacity: 1; pointer-events: auto;
+    }
+  </style>
 </head>
 <body>
   <div class="auth-shell">
@@ -14,7 +30,7 @@
         <span class="logo-text">CITUHireX</span>
       </div>
       <h1 id="brand-heading">Create your<br />student account</h1>
-      <p id="brand-copy">Browse verified OJT postings, track applications, and log your required hours in one place.</p>
+      <p id="brand-copy">Browse verified OJT postings and track applications in one place.</p>
     </div>
 
     <div class="auth-form-panel">
@@ -48,7 +64,10 @@
           </div>
           <div class="field">
             <label>Password</label>
-            <input type="password" id="password" required minlength="8" placeholder="At least 8 characters" />
+            <div class="password-field" id="password-field">
+              <input type="password" id="password" required minlength="8" placeholder="At least 8 characters" />
+              <button type="button" class="password-toggle-btn" id="toggle-password">Show</button>
+            </div>
           </div>
 
           <!-- Student-only fields -->

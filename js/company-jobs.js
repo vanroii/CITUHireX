@@ -2,8 +2,8 @@ import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
 
-const STATUS_KIND = { pending_approval: 'warn', open: 'success', closed: 'info', archived: 'info' }
-const STATUS_LABEL = { pending_approval: 'Pending Approval', open: 'Open', closed: 'Closed', archived: 'Archived' }
+const STATUS_KIND = { pending_approval: 'warn', open: 'success', closed: 'info', archived: 'info', declined: 'warn' }
+const STATUS_LABEL = { pending_approval: 'Pending Approval', open: 'Open', closed: 'Closed', archived: 'Archived', declined: 'Declined' }
 const DEFAULT_REQUIRED_HOURS = 600
 
 const auth = await requireRole('company')
@@ -38,12 +38,11 @@ if (auth) {
   const { data: programs } = await supabase.from('programs').select('id, code, name').order('name')
   const allPrograms = programs || []
 
-  // --- Skills taxonomy: which skills belong to which program(s), fetched once. ---
   const { data: mappings } = await supabase
     .from('program_skills')
     .select('program_id, programs(code), skills(id, name)')
 
-  const skillById = new Map() // skillId -> { id, name, programCodes: Set }
+  const skillById = new Map()
   ;(mappings || []).forEach((m) => {
     if (!skillById.has(m.skills.id)) {
       skillById.set(m.skills.id, { id: m.skills.id, name: m.skills.name, programCodes: new Set() })
@@ -51,10 +50,8 @@ if (auth) {
     skillById.get(m.skills.id).programCodes.add(m.programs.code)
   })
   const allSkills = [...skillById.values()].sort((a, b) => a.name.localeCompare(b.name))
-
   const programIdToCode = new Map(allPrograms.map((p) => [p.id, p.code]))
 
-  /** Skills available given a set of selected program ids (empty = all programs = all skills). */
   function availableSkills(selectedProgramIds) {
     if (selectedProgramIds.length === 0) return allSkills
     const selectedCodes = new Set(selectedProgramIds.map((id) => programIdToCode.get(id)))
@@ -79,7 +76,6 @@ if (auth) {
     return [...container.querySelectorAll('.skill-checkbox:checked')].map((cb) => cb.value)
   }
 
-  // --- Checkbox-based program picker (no cap). Reusable for create + edit forms. ---
   function buildProgramCheckboxes(container, selectedIds, groupName, onChange) {
     container.innerHTML = allPrograms
       .map(
@@ -99,7 +95,6 @@ if (auth) {
     return [...container.querySelectorAll('.program-checkbox:checked')].map((cb) => cb.value)
   }
 
-  // ---------- Create form wiring ----------
   const createProgramsEl = document.getElementById('eligible-programs')
   const createSkillsEl = document.getElementById('required-skills')
 
@@ -196,6 +191,7 @@ if (auth) {
     return `
     <div class="job-post-details" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--gray-200);">
       <p class="sub-meta" id="applicant-count-${job.id}" style="margin-bottom:16px;">Loading applicant count…</p>
+      ${job.status === 'declined' ? '<div class="form-note" style="background:var(--warn-bg); border-color:rgba(184,134,11,0.3); margin-bottom:16px;">This posting was declined by a coordinator. Edit and it will need to be reviewed again once resubmitted.</div>' : ''}
 
       <div class="field">
         <label>Title</label>

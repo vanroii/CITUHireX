@@ -11,6 +11,19 @@ const errorMsg = document.getElementById('error-msg')
 const form = document.getElementById('login-form')
 const forgotLink = document.getElementById('forgot-password-link')
 
+// ---------- Show/Hide password toggle ----------
+const passwordField = document.getElementById('password-field')
+const togglePasswordBtn = document.getElementById('toggle-password')
+
+togglePasswordBtn.addEventListener('click', () => {
+  const isHidden = passwordInput.type === 'password'
+  passwordInput.type = isHidden ? 'text' : 'password'
+  togglePasswordBtn.textContent = isHidden ? 'Hide' : 'Show'
+})
+passwordInput.addEventListener('input', () => {
+  passwordField.classList.toggle('has-value', passwordInput.value.length > 0)
+})
+
 const ROLE_TITLE = { student: 'Student', company: 'Company', coordinator: 'Coordinator' }
 
 function applyRoleUI() {
@@ -32,8 +45,6 @@ function showError(message) {
   errorMsg.style.display = 'block'
 }
 
-// Keep the "Forgot password?" link pointed at whatever email is currently typed in,
-// so the reset page can start pre-filled too.
 function updateForgotLink() {
   const email = emailInput.value.trim()
   forgotLink.href = email ? `forgot-password.html?email=${encodeURIComponent(email)}` : 'forgot-password.html'
@@ -83,9 +94,6 @@ form.addEventListener('submit', async (e) => {
     : `${profile.role}/profile.html?setup=1`
 })
 
-// Pre-fill from a signup handoff (role + email via query params, password via
-// sessionStorage — see js/signup.js). The password is read once and removed
-// immediately so it doesn't linger in storage.
 const params = new URLSearchParams(window.location.search)
 const prefillRole = params.get('role')
 const prefillEmail = params.get('email')
@@ -106,6 +114,7 @@ try {
 }
 if (prefillPassword) {
   passwordInput.value = prefillPassword
+  passwordField.classList.add('has-value')
 }
 
 applyRoleUI()

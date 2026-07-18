@@ -8,11 +8,18 @@ if (auth) {
   const { profile } = auth
   renderSidebar({ role: 'student', activePage: 'jobs.html', profile })
 
-  const [{ data: jobs }, { data: myApps }, { data: student }] = await Promise.all([
+  const [{ data: jobs }, { data: myApps }, { data: student }, { data: programs }] = await Promise.all([
     supabase.from('job_postings').select('*, companies(company_name)').eq('status', 'open').order('created_at', { ascending: false }),
     supabase.from('applications').select('job_posting_id').eq('student_id', profile.id),
     supabase.from('students').select('resume_url, skills, preferred_location').eq('profile_id', profile.id).single(),
+    supabase.from('programs').select('id, name'),
   ])
+
+  const allPrograms = programs || []
+  function programNames(idList) {
+    if (!idList || idList.length === 0) return 'Open to all CEA'
+    return idList.map((id) => allPrograms.find((p) => p.id === id)?.name || 'Unknown').join(', ')
+  }
 
   const hasProfileResume = !!student?.resume_url
   const appliedIds = new Set((myApps || []).map((a) => a.job_posting_id))
@@ -22,10 +29,20 @@ if (auth) {
   // "Matched" if it matches on skills OR location (not both required) —
   // but jobs matching BOTH rank first, skill-only matches next, and
   // location-only matches last. Remote postings satisfy the location side
-  // for everyone; a blank preferred_location just means location-only
-  // matches are limited to remote postings (nothing else to compare against). ---
+  // for everyone. Location matching compares CITY ONLY — barangay is
+  // intentionally independent, so a different barangay within the same
+  // city/municipality still counts as a location match. ---
   const studentSkills = (student?.skills || []).map((s) => s.trim().toLowerCase()).filter(Boolean)
-  const studentLocation = (student?.preferred_location || '').trim().toLowerCase()
+
+  // Both preferred_location ("Barangay, City") and job.location
+  // ("Street, Barangay, City") end with the city/municipality — take the
+  // last comma-separated segment as "the city" for comparison.
+  function extractCity(str) {
+    if (!str) return ''
+    const parts = str.split(',').map((s) => s.trim()).filter(Boolean)
+    return (parts[parts.length - 1] || '').toLowerCase()
+  }
+  const studentCity = extractCity(student?.preferred_location)
 
   function matchInfo(job) {
     const requiredSkills = job.required_skills || []
@@ -34,9 +51,8 @@ if (auth) {
       studentSkills.some((s) => requiredLower[i] === s || requiredLower[i].includes(s) || s.includes(requiredLower[i]))
     )
 
-    const jobLocation = (job.location || '').trim().toLowerCase()
-    const locationMatch =
-      job.is_remote || (!!studentLocation && (jobLocation.includes(studentLocation) || studentLocation.includes(jobLocation)))
+    const jobCity = extractCity(job.location)
+    const locationMatch = job.is_remote || (!!studentCity && !!jobCity && studentCity === jobCity)
 
     return {
       matchCount: matchedSkills.length,
@@ -70,7 +86,7 @@ if (auth) {
   matchedSubtitle.style.display = 'block'
   matchedSubtitle.textContent = 'Based on the skills and preferred location on your profile'
 
-  if (!studentSkills.length && !studentLocation) {
+  if (!studentSkills.length && !studentCity) {
     matchedList.innerHTML = `<p class="empty-text">Add skills and a preferred location to <a href="profile.html" style="color:var(--maroon); font-weight:600;">your profile</a> to see jobs matched to you here.</p>`
   } else if (matchedJobs.length === 0) {
     matchedList.innerHTML = `<p class="empty-text">No postings currently match your skills or preferred location. Browse everything below, or update your <a href="profile.html" style="color:var(--maroon); font-weight:600;">profile</a>.</p>`
@@ -121,12 +137,13 @@ if (auth) {
           <p style="font-size:14px; line-height:1.6; color:var(--gray-700); margin:0 0 16px;">${job.description || 'No description provided.'}</p>
           <p class="sub-meta" style="margin-bottom:8px; font-weight:700;">Required skills</p>
           <div style="margin-bottom:16px;">${skillChips(job, matchedSkillsLower)}</div>
+          <p class="sub-meta" style="margin-bottom:16px;"><strong>Eligible programs:</strong> ${programNames(job.eligible_programs)}</p>
           ${
             applied
               ? '<p class="empty-text">You\'ve already applied to this posting.</p>'
               : `
           <div class="field">
-            <label>Resume ${hasProfileResume ? '(leave blank to use the one on your profile)' : '(required — none on file yet)'}</label>
+            <label>Resume ${hasProfileResume ? '' : '(required to apply)'}</label>
             <input type="file" class="resume-input" accept=".pdf,.doc,.docx" ${hasProfileResume ? '' : 'required'} />
           </div>
           <div class="field">
@@ -134,7 +151,7 @@ if (auth) {
             <input type="file" class="referral-input" accept=".pdf,.doc,.docx" />
           </div>
           <p class="form-error apply-error" style="display:none;"></p>
-          <button class="btn btn-primary btn-sm submit-apply-btn" data-job-id="${job.id}">Submit Application</button>
+          <button class="btn btn-primary btn-sm submit-apply-btn" data-job-id="${job.id}" ${hasProfileResume ? '' : 'disabled'}>Submit Application</button>
           `
           }
         </div>`
@@ -167,7 +184,21 @@ if (auth) {
       })
     })
 
-    // Prevent file inputs / labels inside the expanded panel from toggling the card closed.
+    // Submit stays disabled until a resume file is actually chosen (unless
+    // one is already on file from the student's profile).
+    document.querySelectorAll('.resume-input').forEach((input) => {
+      input.addEventListener('click', (e) => e.stopPropagation())
+      input.addEventListener('change', () => {
+        const card = input.closest('.job-card')
+        const submitBtn = card.querySelector('.submit-apply-btn')
+        if (submitBtn) submitBtn.disabled = !input.files[0] && !hasProfileResume
+      })
+    })
+    document.querySelectorAll('.referral-input').forEach((input) => {
+      input.addEventListener('click', (e) => e.stopPropagation())
+    })
+
+    // Prevent other inputs inside the expanded panel from toggling the card closed.
     document.querySelectorAll('.job-details').forEach((el) => {
       el.addEventListener('click', (e) => e.stopPropagation())
     })
@@ -182,7 +213,7 @@ if (auth) {
     errorEl.style.display = 'none'
 
     if (!resumeFile && !hasProfileResume) {
-      errorEl.textContent = 'Please attach a resume — none is on file for your profile yet.'
+      errorEl.textContent = 'Please attach a resume before submitting.'
       errorEl.style.display = 'block'
       return
     }

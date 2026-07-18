@@ -64,7 +64,7 @@ export function renderSidebar({ role, activePage, profile }) {
         .join('')}
       <div class="sidebar-footer">
         <p class="who">${profile?.full_name || ''} · ${ROLE_LABEL[role] || role}</p>
-        <button id="signout-btn" type="button">Log out</button>
+        <button id="signout-btn" type="button">🚪  Log out</button>
       </div>
     </aside>
   `

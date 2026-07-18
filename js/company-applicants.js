@@ -3,9 +3,9 @@ import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
 import { getSignedUrl } from '../js/storage.js'
 
-// Companies can move an application through their part of the workflow, or
-// decline it outright. Coordinator-only outcome (endorsed) still happens on
-// the Coordinator side.
+// Companies can only move an application through their part of the workflow,
+// or decline it outright. Coordinator-only outcome (endorsed) still happens
+// on the Coordinator side.
 const COMPANY_STATUSES = ['submitted', 'company_review', 'coordinator_review', 'rejected']
 const STATUS_KIND = {
   submitted: 'info', company_review: 'info', coordinator_review: 'warn',
@@ -15,14 +15,11 @@ const STATUS_LABEL = {
   submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Sent to Coordinator',
   endorsed: 'Approved', placement_active: 'Placement Active', completed: 'Completed', rejected: 'Rejected',
 }
-// Dropdown option text differs slightly from the badge label above —
-// "Decline" reads as the company's action, "Rejected" reads as the outcome
-// (used for the badge once an application is no longer editable elsewhere).
 const COMPANY_DROPDOWN_LABEL = {
   submitted: 'New', company_review: 'Reviewing', coordinator_review: 'Sent to Coordinator', rejected: 'Decline',
 }
 
-const GRID = '1.5fr 1.4fr 1fr 0.9fr 1fr 1fr 0.8fr'
+const GRID = '1.3fr 1.5fr 1.4fr 1.1fr 0.9fr 1fr 1.5fr 0.6fr'
 
 const auth = await requireRole('company')
 if (auth) {
@@ -34,7 +31,7 @@ if (auth) {
   async function load() {
     const { data: applicants } = await supabase
       .from('applications')
-      .select('*, students(profile_id, programs(name), profiles(full_name)), job_postings!inner(company_id, title)')
+      .select('*, students(profile_id, programs(name), profiles(full_name, email)), job_postings!inner(company_id, title)')
       .eq('job_postings.company_id', profile.id)
       .order('applied_at', { ascending: false })
 
@@ -42,7 +39,7 @@ if (auth) {
 
     table.innerHTML = `
       <div class="thead-row" style="grid-template-columns: ${GRID};">
-        <span>Applicant</span><span>Job Posting</span><span>Program</span><span>Applied</span><span>Documents</span><span>Status</span><span></span>
+        <span>Applicant</span><span>Email</span><span>Job Posting</span><span>Program</span><span>Applied</span><span>Documents</span><span>Status</span><span></span>
       </div>
       ${
         list.length
@@ -51,6 +48,7 @@ if (auth) {
                 (a) => `
         <div class="trow" style="grid-template-columns: ${GRID};">
           <span style="font-weight:600;">${a.students?.profiles?.full_name || 'Applicant'}</span>
+          <span>${a.students?.profiles?.email || ''}</span>
           <span>${a.job_postings?.title || ''}</span>
           <span>${a.students?.programs?.name || ''}</span>
           <span>${new Date(a.applied_at).toLocaleDateString()}</span>

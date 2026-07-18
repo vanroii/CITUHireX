@@ -20,10 +20,24 @@ const successPanel = document.getElementById('success-panel')
 const citySelect = document.getElementById('city')
 const barangaySelect = document.getElementById('barangay')
 
+// ---------- Show/Hide password toggle ----------
+const passwordInput = document.getElementById('password')
+const passwordField = document.getElementById('password-field')
+const togglePasswordBtn = document.getElementById('toggle-password')
+
+togglePasswordBtn.addEventListener('click', () => {
+  const isHidden = passwordInput.type === 'password'
+  passwordInput.type = isHidden ? 'text' : 'password'
+  togglePasswordBtn.textContent = isHidden ? 'Hide' : 'Show'
+})
+passwordInput.addEventListener('input', () => {
+  passwordField.classList.toggle('has-value', passwordInput.value.length > 0)
+})
+
 const BRAND = {
   student: {
     heading: 'Create your<br />student account',
-    copy: 'Browse verified OJT postings, track applications, and log your required hours in one place.',
+    copy: 'Browse verified OJT postings and track applications in one place.',
   },
   company: {
     heading: 'Create your<br />company account',
@@ -31,7 +45,7 @@ const BRAND = {
   },
   coordinator: {
     heading: 'Create your<br />coordinator account',
-    copy: 'Coordinator accounts oversee approvals and endorsements. New coordinator access is provisioned manually rather than through self-signup.',
+    copy: 'Coordinator accounts oversee approvals. New coordinator access is provisioned manually rather than through self-signup.',
   },
 }
 
@@ -53,7 +67,6 @@ function setRole(newRole) {
 
 tabs.forEach((tab) => tab.addEventListener('click', () => setRole(tab.dataset.role)))
 
-// Populate the program dropdown from the live programs table.
 supabase
   .from('programs')
   .select('id, name')
@@ -68,7 +81,6 @@ supabase
     })
   })
 
-// Populate the standardized industry dropdown.
 INDUSTRIES.forEach((name) => {
   const opt = document.createElement('option')
   opt.value = name
@@ -76,7 +88,6 @@ INDUSTRIES.forEach((name) => {
   document.getElementById('industry').appendChild(opt)
 })
 
-// Populate City/Municipality, then cascade Barangay options on selection.
 Object.keys(CEBU_LOCATIONS).forEach((city) => {
   const opt = document.createElement('option')
   opt.value = city
@@ -122,7 +133,7 @@ form.addEventListener('submit', async (e) => {
 
   const fullName = document.getElementById('full-name').value.trim()
   const email = emailInput.value.trim()
-  const password = document.getElementById('password').value
+  const password = passwordInput.value
   const programId = document.getElementById('program-id')?.value
 
   if (role === 'student' && !/@cit\.edu$/i.test(email)) {
@@ -168,10 +179,6 @@ form.addEventListener('submit', async (e) => {
           contact_person: document.getElementById('contact-person').value.trim(),
         }
 
-  // profiles (+ the matching students/companies row) are created automatically
-  // by a database trigger reading this metadata — see
-  // supabase/migrations/0008_handle_new_user_trigger.sql and
-  // supabase/migrations/0019_student_only_profile_gate.sql
   const { data, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -187,18 +194,10 @@ form.addEventListener('submit', async (e) => {
   }
 
   if (data.session) {
-    // Only students have a profile-completion gate — companies go straight to their dashboard.
     window.location.href = role === 'student' ? `${role}/profile.html?setup=1` : `${role}/dashboard.html`
     return
   }
 
-  // Email confirmation required: hand the role + email + password to the
-  // login page so the person only has to click "Log In" once they've
-  // confirmed their address. Password only ever goes in sessionStorage
-  // (cleared the moment login.js reads it), never in the URL — if the
-  // confirmation link happens to open in a different tab, sessionStorage
-  // won't carry over and the password field just comes up empty, which is
-  // a safe, graceful fallback rather than a broken page.
   try {
     sessionStorage.setItem('citu_prefill_password', password)
   } catch {
@@ -216,7 +215,6 @@ form.addEventListener('submit', async (e) => {
   }
 })
 
-// Preselect the role tab from a query param, e.g. signup.html?role=company
 const params = new URLSearchParams(window.location.search)
 const initialRole = params.get('role')
 setRole(['student', 'company', 'coordinator'].includes(initialRole) ? initialRole : 'student')

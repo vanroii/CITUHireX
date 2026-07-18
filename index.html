@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CITUHireX — OJT Matching for CEA</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+    .navbar, .section, .footer {
+      scroll-snap-align: start;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
 </head>
 <body>
   <nav class="navbar hero-gradient" style="border-radius: 0 0 24px 24px;">
@@ -29,7 +41,7 @@
     <h1>Where CEA students find their OJT. Verified.</h1>
     <p>
       CITUHireX connects College of Engineering and Architecture students with partner companies,
-      backed by real-time coordinator review, endorsement tracking, and hour-based OJT matching.
+      backed by real-time coordinator review and approvement tracking.
     </p>
     <div class="hero-buttons">
       <a href="signup.html?role=student" class="btn btn-gold">I'm a Student</a>
@@ -38,10 +50,10 @@
   </section>
 
   <div class="stats-bar">
-    <div class="stat"><span class="n">320+</span><span class="l">Partner Companies</span></div>
-    <div class="stat"><span class="n">4,800+</span><span class="l">CEA Students Matched</span></div>
+    <div class="stat"><span class="n">120+</span><span class="l">Partner Companies</span></div>
+    <div class="stat"><span class="n">700+</span><span class="l">CEA Students Matched</span></div>
     <div class="stat"><span class="n">96%</span><span class="l">Coordinator Approval Rate</span></div>
-    <div class="stat"><span class="n">8</span><span class="l">Engineering &amp; Architecture Programs</span></div>
+    <div class="stat"><span class="n">10</span><span class="l">Engineering &amp; Architecture Programs</span></div>
   </div>
 
   <section class="section" id="roles">
@@ -51,7 +63,7 @@
       <div class="role-card">
         <div class="icon-badge" style="background: var(--maroon);">🎓</div>
         <h3>Students</h3>
-        <p>Browse verified OJT postings filtered by program, required hours, and skills. Track applications and upload endorsements in one place.</p>
+        <p>Browse verified OJT postings filtered by program, and skills. Track applications and upload endorsements in one place.</p>
         <span class="tag" style="color: var(--maroon);">CEA STUDENTS</span>
       </div>
       <div class="role-card">
@@ -63,7 +75,7 @@
       <div class="role-card">
         <div class="icon-badge" style="background: var(--maroon-light);">✅</div>
         <h3>OJT Coordinators</h3>
-        <p>Approve postings, oversee placements across programs, and monitor analytics with a full audit trail for compliance.</p>
+        <p>Approve postings, oversee applications in designated programs, and monitor analytics with a full audit trail for compliance.</p>
         <span class="tag" style="color: var(--maroon-light);">DEPARTMENT COORDINATORS</span>
       </div>
     </div>
@@ -76,7 +88,7 @@
       <div class="step-card">
         <span class="n">01</span>
         <h3>Student Applies</h3>
-        <p>Browses openings matched to program &amp; required OJT hours, submits resume + referral letter.</p>
+        <p>Browses openings matched to program &amp; submits resume + referral letter.</p>
       </div>
       <div class="step-card">
         <span class="n">02</span>
@@ -86,12 +98,12 @@
       <div class="step-card">
         <span class="n">03</span>
         <h3>Coordinator Approves</h3>
-        <p>Department coordinator verifies eligibility and endorses the placement.</p>
+        <p>Department coordinator verifies eligibility and approves the application.</p>
       </div>
       <div class="step-card">
         <span class="n">04</span>
         <h3>Placement Tracked</h3>
-        <p>Hours, status, and documents are logged with a full audit trail.</p>
+        <p>Status, and documents are logged with a full audit trail.</p>
       </div>
     </div>
   </section>

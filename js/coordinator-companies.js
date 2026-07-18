@@ -5,6 +5,7 @@ import { renderSidebar } from '../js/sidebar.js'
 const STATUS_BADGE = {
   verified: '<span class="badge badge-success">Verified</span>',
   denied: '<span class="badge badge-warn">Denied</span>',
+  terminated: '<span class="badge badge-warn">Partnership Terminated</span>',
   pending: '<span class="badge badge-info">Pending Review</span>',
 }
 
@@ -41,20 +42,34 @@ if (auth) {
     list.querySelectorAll('.set-status-btn').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation()
-        const status = btn.dataset.status
-        btn.disabled = true
-        await supabase
-          .from('companies')
-          .update({
-            verification_status: status,
-            is_verified: status === 'verified',
-            verified_by: profile.id,
-            verified_at: new Date().toISOString(),
-          })
-          .eq('profile_id', btn.dataset.id)
-        load()
+        applyStatus(btn.dataset.id, btn.dataset.status)
       })
     })
+
+    list.querySelectorAll('.terminate-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const companyName = btn.dataset.name
+        if (!confirm(`Terminate the partnership with "${companyName}"? Their job postings will stay in place, but they'll lose verified status. This cannot be undone from here.`)) {
+          return
+        }
+        applyStatus(btn.dataset.id, 'terminated', btn)
+      })
+    })
+  }
+
+  async function applyStatus(companyId, status, btn) {
+    if (btn) btn.disabled = true
+    await supabase
+      .from('companies')
+      .update({
+        verification_status: status,
+        is_verified: status === 'verified',
+        verified_by: profile.id,
+        verified_at: new Date().toISOString(),
+      })
+      .eq('profile_id', companyId)
+    load()
   }
 
   function renderCard(c) {
@@ -78,6 +93,21 @@ if (auth) {
   }
 
   function renderDetails(c, status) {
+    let actionButtons = ''
+    if (status === 'verified') {
+      actionButtons = `<button class="btn btn-ghost btn-sm terminate-btn" data-id="${c.profile_id}" data-name="${(c.company_name || '').replace(/"/g, '&quot;')}">Terminate Partnership</button>`
+    } else if (status === 'pending') {
+      actionButtons = `
+        <button class="btn btn-primary btn-sm set-status-btn" data-id="${c.profile_id}" data-status="verified">Verify</button>
+        <button class="btn btn-ghost btn-sm set-status-btn" data-id="${c.profile_id}" data-status="denied">Deny</button>`
+    } else if (status === 'denied') {
+      actionButtons = `
+        <button class="btn btn-primary btn-sm set-status-btn" data-id="${c.profile_id}" data-status="verified">Verify</button>
+        <button class="btn btn-ghost btn-sm set-status-btn" data-id="${c.profile_id}" data-status="pending">Reset to Pending</button>`
+    } else if (status === 'terminated') {
+      actionButtons = `<button class="btn btn-primary btn-sm set-status-btn" data-id="${c.profile_id}" data-status="verified">Reinstate</button>`
+    }
+
     return `
       <div class="company-details" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--gray-200);">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
@@ -90,9 +120,7 @@ if (auth) {
         </div>
         <div class="row-actions">
           <a href="messages.html?with=${c.profile_id}" class="btn btn-ghost btn-sm">💬 Message</a>
-          ${status !== 'verified' ? `<button class="btn btn-primary btn-sm set-status-btn" data-id="${c.profile_id}" data-status="verified">Verify</button>` : ''}
-          ${status !== 'denied' ? `<button class="btn btn-ghost btn-sm set-status-btn" data-id="${c.profile_id}" data-status="denied">Deny</button>` : ''}
-          ${status !== 'pending' ? `<button class="btn btn-ghost btn-sm set-status-btn" data-id="${c.profile_id}" data-status="pending">Reset to Pending</button>` : ''}
+          ${actionButtons}
         </div>
       </div>`
   }
