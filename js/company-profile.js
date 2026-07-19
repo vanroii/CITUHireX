@@ -30,6 +30,7 @@ if (auth) {
   })
 
   document.getElementById('company-name').value = company?.company_name || ''
+  document.getElementById('email').value = profile.email || ''
   industrySelect.value = company?.industry || ''
   document.getElementById('address').value = company?.address || ''
   document.getElementById('website').value = company?.website || ''

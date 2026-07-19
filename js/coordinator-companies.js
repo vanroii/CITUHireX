@@ -18,7 +18,18 @@ if (auth) {
   let expandedId = null
 
   async function load() {
-    const { data } = await supabase.from('companies').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*, profiles!companies_profile_id_fkey(email)')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Failed to load companies:', error)
+      companies = []
+      render()
+      return
+    }
+
     companies = data || []
     render()
   }
@@ -111,6 +122,7 @@ if (auth) {
     return `
       <div class="company-details" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--gray-200);">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div><p class="sub-meta" style="font-weight:700; margin:0 0 2px;">Email</p><p class="sub-meta" style="margin:0;">${c.profiles?.email || '—'}</p></div>
           <div><p class="sub-meta" style="font-weight:700; margin:0 0 2px;">Industry</p><p class="sub-meta" style="margin:0;">${c.industry || '—'}</p></div>
           <div><p class="sub-meta" style="font-weight:700; margin:0 0 2px;">Address</p><p class="sub-meta" style="margin:0;">${c.address || '—'}</p></div>
           <div><p class="sub-meta" style="font-weight:700; margin:0 0 2px;">Website</p><p class="sub-meta" style="margin:0;">${c.website || '—'}</p></div>
