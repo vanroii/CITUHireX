@@ -96,13 +96,13 @@ if (auth) {
     if (resumeEl && app.resume_url) {
       const url = await getSignedUrl(app.resume_url)
       resumeEl.innerHTML = url
-        ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-weight:600;">View current resume</a>`
+        ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-size:15px; font-weight:600;">View current resume</a>`
         : 'Resume on file (link unavailable)'
     }
     if (referralEl && app.referral_letter_url) {
       const url = await getSignedUrl(app.referral_letter_url)
       referralEl.innerHTML = url
-        ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-weight:600;">View current referral letter</a>`
+        ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-size:15px; font-weight:600;">View current referral letter</a>`
         : 'Referral letter on file (link unavailable)'
     }
   }
@@ -151,7 +151,6 @@ if (auth) {
       <p class="sub-meta" style="margin-bottom:8px; font-weight:700;">Required skills</p>
       <div style="margin-bottom:16px;">${skillsHtml}</div>
       <p class="sub-meta" style="margin-bottom:8px;"><strong>Eligible programs:</strong> ${programNames(job.eligible_programs)}</p>
-      <p class="sub-meta">${job.required_hours || '—'} hrs${job.is_remote ? ' · Remote' : ''}</p>
 
       ${endorsementHistory ? `<p class="sub-meta" style="margin:16px 0 0; font-weight:700;">Coordinator history</p>${endorsementHistory}` : ''}
 
@@ -173,7 +172,7 @@ if (auth) {
         </div>
         <div class="field">
           <label>Referral Letter (leave blank to keep current)</label>
-          <p class="sub-meta" id="referral-link-${app.id}" style="margin:0 0 8px;">${app.referral_letter_url ? 'Loading…' : 'None attached.'}</p>
+          <p class="sub-meta" id="referral-link-${app.id}" style="margin:0 0 8px; font-size:14px;">${app.referral_letter_url ? 'Loading…' : 'None attached.'}</p>
           <input type="file" class="edit-referral-input" accept=".pdf,.doc,.docx" />
         </div>
         <div class="field">
