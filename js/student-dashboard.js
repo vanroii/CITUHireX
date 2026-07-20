@@ -12,9 +12,9 @@ const STATUS_KIND = {
   rejected: 'warn',
 }
 const STATUS_LABEL = {
-  submitted: 'Submitted',
+  submitted: 'Pending',
   company_review: 'Company Reviewing',
-  coordinator_review: 'Pending Coordinator Review',
+  coordinator_review: 'Coordinator Reviewing',
   endorsed: 'Approved',
   placement_active: 'Placement Active',
   completed: 'Completed',
@@ -49,15 +49,17 @@ if (auth) {
     <div class="stat-card"><p class="stat-label">Approved Applications</p><p class="stat-value" style="color:var(--success);">${approvedCount}</p></div>
   `
 
-  // Open postings scoped to this student's program: eligible_programs either
+  // Postings scoped to this student's program: eligible_programs either
   // contains their program id, or is empty (meaning "open to all CEA").
+  // Includes closed postings too — a job that filled up shouldn't just
+  // vanish, it should still show with a "Closed" badge.
   const jobsList = document.getElementById('open-jobs-list')
   let jobs = []
   if (student?.program_id) {
     const { data } = await supabase
       .from('job_postings')
       .select('*, companies(company_name)')
-      .eq('status', 'open')
+      .in('status', ['open', 'closed'])
       .or(`eligible_programs.cs.{${student.program_id}},eligible_programs.eq.{}`)
       .limit(5)
     jobs = data || []
@@ -72,7 +74,7 @@ if (auth) {
             <p class="title">${job.title}</p>
             <p class="meta">${job.companies?.company_name || ''} · ${job.location}</p>
           </div>
-          <span class="badge badge-info">Open</span>
+          <span class="badge badge-${job.status === 'closed' ? 'warn' : 'info'}">${job.status === 'closed' ? 'Closed' : 'Open'}</span>
         </div>`
         )
         .join('')

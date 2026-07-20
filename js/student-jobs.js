@@ -9,7 +9,7 @@ if (auth) {
   renderSidebar({ role: 'student', activePage: 'jobs.html', profile })
 
   const [{ data: jobs }, { data: myApps }, { data: student }, { data: programs }] = await Promise.all([
-    supabase.from('job_postings').select('*, companies(company_name)').eq('status', 'open').order('created_at', { ascending: false }),
+    supabase.from('job_postings').select('*, companies(company_name)').in('status', ['open', 'closed']).order('created_at', { ascending: false }),
     supabase.from('applications').select('job_posting_id').eq('student_id', profile.id),
     supabase.from('students').select('resume_url, skills, preferred_location, program_id').eq('profile_id', profile.id).single(),
     supabase.from('programs').select('id, name'),
@@ -115,6 +115,7 @@ if (auth) {
 
   function renderJobCard(job, info) {
     const applied = appliedIds.has(job.id)
+    const isClosed = job.status === 'closed'
     const expanded = expandedJobId === job.id
     const matchedSkillsLower = info?.matchedSkillsLower
 
@@ -131,10 +132,10 @@ if (auth) {
           <div>
             <p class="title">${job.title}</p>
             <p class="meta">${job.companies?.company_name || ''} · ${job.location}${job.is_remote ? ' (Remote)' : ''}</p>
-            <p class="sub-meta">${job.slots_available} slot(s) available${matchLine ? ` · ${matchLine}` : ''}</p>
+            <p class="sub-meta">${isClosed ? 'No slots remaining' : `${job.slots_available} slot(s) available`}${matchLine ? ` · ${matchLine}` : ''}</p>
           </div>
           <div class="row-actions">
-            ${applied ? '<span class="badge badge-info">Already Applied</span>' : ''}
+            ${applied ? '<span class="badge badge-info">Already Applied</span>' : isClosed ? '<span class="badge badge-warn">Closed</span>' : ''}
             <span style="font-size:13px; font-weight:600; color:var(--maroon);">${expanded ? 'Hide details ▲' : 'View details ▼'}</span>
           </div>
         </div>
@@ -149,6 +150,8 @@ if (auth) {
           ${
             applied
               ? '<p class="empty-text">You\'ve already applied to this posting.</p>'
+              : isClosed
+              ? '<p class="empty-text">This posting is closed and no longer accepting applications — all slots have been filled.</p>'
               : `
           <div class="field">
             <label>Resume ${hasProfileResume ? '' : '(required to apply)'}</label>
