@@ -11,7 +11,7 @@ if (auth) {
   const [{ data: jobs }, { data: myApps }, { data: student }, { data: programs }] = await Promise.all([
     supabase.from('job_postings').select('*, companies(company_name)').eq('status', 'open').order('created_at', { ascending: false }),
     supabase.from('applications').select('job_posting_id').eq('student_id', profile.id),
-    supabase.from('students').select('resume_url, skills, preferred_location').eq('profile_id', profile.id).single(),
+    supabase.from('students').select('resume_url, skills, preferred_location, program_id').eq('profile_id', profile.id).single(),
     supabase.from('programs').select('id, name'),
   ])
 
@@ -23,7 +23,15 @@ if (auth) {
 
   const hasProfileResume = !!student?.resume_url
   const appliedIds = new Set((myApps || []).map((a) => a.job_posting_id))
-  const allJobs = jobs || []
+
+  // Eligibility gate: a job only appears here if it's open to all CEA
+  // (empty eligible_programs) or specifically includes the student's own
+  // program. This applies before matching/sorting, so Browse Jobs never
+  // shows a posting the student can't actually apply their program to.
+  const studentProgramId = student?.program_id || null
+  const allJobs = (jobs || []).filter(
+    (job) => !job.eligible_programs || job.eligible_programs.length === 0 || job.eligible_programs.includes(studentProgramId)
+  )
 
   // --- Matching: the core objective of this platform. A job qualifies as
   // "Matched" if it matches on skills OR location (not both required) —

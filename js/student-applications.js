@@ -2,6 +2,7 @@ import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
 import { uploadDocument, getSignedUrl } from '../js/storage.js'
+import { confirmDialog } from '../js/confirm-dialog.js'
 
 const STATUS_KIND = {
   submitted: 'info',
@@ -42,7 +43,7 @@ if (auth) {
       supabase
         .from('applications')
         .select(
-          '*, job_postings(title, description, location, required_skills, eligible_programs, company_id, companies(company_name)), endorsements(decision, remarks, decided_at)'
+          '*, job_postings(title, description, location, required_hours, is_remote, required_skills, eligible_programs, company_id, companies(company_name)), endorsements(decision, remarks, decided_at)'
         )
         .eq('student_id', profile.id)
         .order('applied_at', { ascending: false }),
@@ -95,13 +96,13 @@ if (auth) {
     if (resumeEl && app.resume_url) {
       const url = await getSignedUrl(app.resume_url)
       resumeEl.innerHTML = url
-        ? `<a href="${url}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="margin-top:12px; display:inline-flex; style="color:var(--maroon); font-weight:600; font-size:14px;">View current resume</a>`
+        ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-weight:600;">View current resume</a>`
         : 'Resume on file (link unavailable)'
     }
     if (referralEl && app.referral_letter_url) {
       const url = await getSignedUrl(app.referral_letter_url)
       referralEl.innerHTML = url
-        ? `<a href="${url}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="margin-top:12px; display:inline-flex; style="color:var(--maroon); font-weight:600; font-size:14px;">View current referral letter</a>`
+        ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--maroon); font-weight:600;">View current referral letter</a>`
         : 'Referral letter on file (link unavailable)'
     }
   }
@@ -150,6 +151,7 @@ if (auth) {
       <p class="sub-meta" style="margin-bottom:8px; font-weight:700;">Required skills</p>
       <div style="margin-bottom:16px;">${skillsHtml}</div>
       <p class="sub-meta" style="margin-bottom:8px;"><strong>Eligible programs:</strong> ${programNames(job.eligible_programs)}</p>
+      <p class="sub-meta">${job.required_hours || '—'} hrs${job.is_remote ? ' · Remote' : ''}</p>
 
       ${endorsementHistory ? `<p class="sub-meta" style="margin:16px 0 0; font-weight:700;">Coordinator history</p>${endorsementHistory}` : ''}
 
@@ -229,7 +231,13 @@ if (auth) {
   }
 
   async function withdrawApplication(appId, btn) {
-    if (!confirm('Delete this application? This cannot be undone.')) return
+    const ok = await confirmDialog(
+      'Delete this application?',
+      'This cannot be undone. Your resume and referral letter for this application will also be removed.',
+      'Delete'
+    )
+    if (!ok) return
+
     btn.disabled = true
     btn.textContent = 'Deleting…'
 

@@ -1,6 +1,7 @@
 import { supabase } from '../js/supabase-client.js'
 import { requireRole } from '../js/auth.js'
 import { renderSidebar } from '../js/sidebar.js'
+import { confirmDialog } from '../js/confirm-dialog.js'
 
 const STATUS_KIND = { pending_approval: 'warn', open: 'success', closed: 'info', archived: 'info', declined: 'warn' }
 const STATUS_LABEL = { pending_approval: 'Pending Approval', open: 'Open', closed: 'Closed', archived: 'Archived', declined: 'Declined' }
@@ -322,12 +323,13 @@ if (auth) {
 
   async function deleteJob(jobId, btn) {
     const count = applicantCounts[jobId] ?? 0
-    const warning =
+    const message =
       count > 0
-        ? `This posting has ${count} applicant${count === 1 ? '' : 's'}. Deleting it will also permanently delete their application record${count === 1 ? '' : 's'}. This cannot be undone.`
-        : 'Delete this job posting? This cannot be undone.'
+        ? `This posting has ${count} applicant${count === 1 ? '' : 's'}. Deleting it will also permanently delete their application record${count === 1 ? '' : 's'}.`
+        : 'This cannot be undone.'
 
-    if (!confirm(warning)) return
+    const ok = await confirmDialog('Delete this job posting?', message, 'Delete')
+    if (!ok) return
 
     btn.disabled = true
     btn.textContent = 'Deleting…'
